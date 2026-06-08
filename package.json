@@ -1,0 +1,47 @@
+{
+  "name": "<insert-plugin-name>",
+  "author": "benjypng",
+  "description": "",
+  "license": "MIT",
+  "logseq": {
+    "id": "<insert-plugin-name>",
+    "title": "<insert-plugin-name>",
+    "icon": "./icon.svg",
+    "main": "dist/index.html"
+  },
+  "scripts": {
+    "dev": "bunx vite",
+    "build": "bunx vite build",
+    "prepare": "husky",
+    "lint:precommit": "echo \"Running biome\" && bunx biome check . --write && echo \"Running tsc\" && tsc --noEmit"
+  },
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/github",
+        {
+          "assets": [
+            "<insert-plugin-name>.zip"
+          ]
+        }
+      ]
+    ]
+  },
+  "dependencies": {
+    "@logseq/libs": "^0.3.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.15",
+    "@types/node": "^25.8.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "husky": "^9.1.7",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.13",
+    "vite-plugin-logseq": "^1.1.2",
+    "vite-tsconfig-paths": "^6.1.1"
+  }
+}
