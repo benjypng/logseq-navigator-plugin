@@ -1,13 +1,14 @@
 {
-  "name": "<insert-plugin-name>",
+  "name": "logseq-navigator-plugin",
   "author": "benjypng",
-  "description": "",
+  "description": "A three-pane note navigator that replaces the underused native left sidebar in Logseq DB graphs.",
   "license": "MIT",
   "logseq": {
-    "id": "<insert-plugin-name>",
-    "title": "<insert-plugin-name>",
+    "id": "logseq-navigator-plugin",
+    "title": "Navigator",
     "icon": "./icon.svg",
-    "main": "dist/index.html"
+    "main": "dist/index.html",
+    "unsupportedGraphType": "file"
   },
   "scripts": {
     "dev": "bunx vite",
@@ -16,22 +17,21 @@
     "lint:precommit": "echo \"Running biome\" && bunx biome check . --write && echo \"Running tsc\" && tsc --noEmit"
   },
   "release": {
-    "branches": [
-      "main"
-    ],
+    "branches": ["main"],
     "plugins": [
       [
         "@semantic-release/github",
         {
-          "assets": [
-            "<insert-plugin-name>.zip"
-          ]
+          "assets": ["logseq-navigator-plugin.zip"]
         }
       ]
     ]
   },
   "dependencies": {
-    "@logseq/libs": "^0.3.3"
+    "@logseq/libs": "^0.3.3",
+    "@tanstack/react-virtual": "^3.14.2",
+    "react": "^19",
+    "react-dom": "^19"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.15",
