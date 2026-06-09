@@ -2,7 +2,14 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
 .navigator-root {
+  position: relative;
   display: flex;
   flex-direction: row;
   width: 100%;
@@ -31,6 +38,23 @@
 .navigator-root input {
   font-family: inherit;
   font-size: inherit;
+}
+
+.navigator-resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 6;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  background: transparent;
+  touch-action: none;
+}
+
+.navigator-resize-handle:hover {
+  background: var(--ls-active-primary-color, #3b82f6);
+  opacity: 0.4;
 }
 
 .navigator-close-button {

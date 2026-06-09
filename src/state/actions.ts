@@ -1,6 +1,9 @@
-import { readBookmarks, writeBookmarks } from '../config/config-page'
-import { readPins, writePins } from '../config/pins'
-import { DEFAULT_NODE_POLICY } from '../constants'
+import { readConfig, writeConfig } from '../config/config-page'
+import {
+  DEFAULT_NODE_POLICY,
+  MAX_PANE_WIDTH,
+  MIN_PANE_WIDTH,
+} from '../constants'
 import { resolveFolder } from '../data/resolve'
 import { enumerateTags } from '../data/tags'
 import { getBlockWithChildren, getPage, showMessage } from '../logseq/api'
@@ -15,10 +18,12 @@ import type {
 import {
   getState,
   putResult,
+  resetGraphState,
   selectFolder,
   setBookmarks,
   setFolders,
   setPinnedByFolder,
+  setWidth,
 } from './store'
 
 const isUserDefinedTag = (ident: string | null): boolean => {
@@ -92,13 +97,40 @@ export const selectAndResolveFolder = async (
   await resolveActiveFolder(folderId, true)
 }
 
-export const loadBookmarks = async (): Promise<void> => {
+export const loadConfig = async (): Promise<void> => {
   try {
-    const bookmarks = await readBookmarks()
-    setBookmarks(bookmarks)
+    const config = await readConfig()
+    setBookmarks(config.bookmarks)
+    setPinnedByFolder(config.pinnedByFolder)
+    setWidth(config.width)
   } catch {
     setBookmarks([])
+    setPinnedByFolder(new Map<string, string[]>())
   }
+}
+
+const persistConfig = async (): Promise<void> => {
+  const state = getState()
+  await writeConfig({
+    bookmarks: state.bookmarks,
+    pinnedByFolder: state.pinnedByFolder,
+    width: state.width,
+  })
+}
+
+export const resizePaneWidth = async (width: number): Promise<void> => {
+  let clamped = Math.round(width)
+  if (clamped < MIN_PANE_WIDTH) {
+    clamped = MIN_PANE_WIDTH
+  }
+  if (clamped > MAX_PANE_WIDTH) {
+    clamped = MAX_PANE_WIDTH
+  }
+  if (clamped === getState().width) {
+    return
+  }
+  setWidth(clamped)
+  await persistConfig()
 }
 
 export const loadFolders = async (): Promise<void> => {
@@ -110,8 +142,7 @@ export const loadFolders = async (): Promise<void> => {
   }
   const folders = buildTagFolders(tags)
   setFolders(folders)
-  setPinnedByFolder(readPins())
-  await loadBookmarks()
+  await loadConfig()
   const state = getState()
   if (state.selectedFolderId === null && folders.length > 0) {
     const firstFolder = folders[0]
@@ -119,6 +150,11 @@ export const loadFolders = async (): Promise<void> => {
       await selectAndResolveFolder(firstFolder.id)
     }
   }
+}
+
+export const reloadForGraphChange = async (): Promise<void> => {
+  resetGraphState()
+  await loadFolders()
 }
 
 const addBookmark = async (bookmark: Bookmark): Promise<void> => {
@@ -135,7 +171,7 @@ const addBookmark = async (bookmark: Bookmark): Promise<void> => {
   })
   next.push(bookmark)
   setBookmarks(next)
-  await writeBookmarks(next)
+  await persistConfig()
   showMessage('Bookmarked: ' + bookmark.title, 'success')
 }
 
@@ -169,7 +205,7 @@ export const removeBookmark = async (uuid: string): Promise<void> => {
     }
   })
   setBookmarks(next)
-  await writeBookmarks(next)
+  await persistConfig()
 }
 
 export const togglePin = (folderId: string, uuid: string): void => {
@@ -191,7 +227,7 @@ export const togglePin = (folderId: string, uuid: string): void => {
   }
   nextMap.set(folderId, nextList)
   setPinnedByFolder(nextMap)
-  writePins(nextMap)
+  void persistConfig()
 }
 
 const nodesSignature = (nodes: NodeIdentity[]): string => {

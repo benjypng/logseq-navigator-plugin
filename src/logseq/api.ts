@@ -1,5 +1,7 @@
 import type { BlockEntity, PageEntity } from '@logseq/libs/dist/LSPlugin.user'
 
+import { NAVIGATOR_INLINE_STYLE } from '../constants'
+
 export const runDatascriptQuery = async <ResultType>(
   query: string,
 ): Promise<ResultType> => {
@@ -66,18 +68,6 @@ export const getLinkedReferenceBlocks = async (
     }
   })
   return blocks
-}
-
-export const getPinsSetting = (): unknown => {
-  const settingsObject = logseq.settings
-  if (settingsObject === undefined) {
-    return null
-  }
-  return settingsObject['pinsByFolder']
-}
-
-export const setPinsSetting = (value: unknown): void => {
-  logseq.updateSettings({ pinsByFolder: value })
 }
 
 export const registerBlockBookmarkMenu = (
@@ -148,6 +138,13 @@ export const onRouteChanged = (callback: () => void): (() => void) => {
   return off
 }
 
+export const onGraphChanged = (callback: () => void): (() => void) => {
+  const off = logseq.App.onCurrentGraphChanged(() => {
+    callback()
+  })
+  return off
+}
+
 export const onDbChanged = (
   callback: (changedUuids: string[]) => void,
 ): (() => void) => {
@@ -165,8 +162,19 @@ export const onDbChanged = (
   return off
 }
 
+export const setMainUIWidth = (widthPx: number): void => {
+  logseq.setMainUIInlineStyle({
+    ...NAVIGATOR_INLINE_STYLE,
+    width: String(widthPx) + 'px',
+  })
+}
+
 export const hideUI = (): void => {
   logseq.hideMainUI()
+}
+
+export const invokeSearch = async (): Promise<void> => {
+  await logseq.App.invokeExternalCommand('logseq.go/search')
 }
 
 export const showMessage = (

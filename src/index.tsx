@@ -4,9 +4,9 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import {
+  DEFAULT_PANE_WIDTH,
   NAVIGATOR_COMMAND_KEY,
   NAVIGATOR_COMMAND_LABEL,
-  NAVIGATOR_INLINE_STYLE,
   NAVIGATOR_KEYBINDING,
 } from './constants'
 import { applyDock, restoreDock } from './dock/dock-stub'
@@ -14,10 +14,12 @@ import {
   checkCurrentIsDbGraph,
   registerBlockBookmarkMenu,
   registerPageBookmarkMenu,
+  setMainUIWidth,
   showMessage,
 } from './logseq/api'
 import { settings } from './settings'
 import { bookmarkBlock, bookmarkPage } from './state/actions'
+import { startGraphSync } from './state/graph-sync'
 import { startDbRefresh } from './state/refresh'
 import { startSelectionSync } from './state/selection-sync'
 import { App } from './ui/App'
@@ -44,6 +46,7 @@ const registerToggleCommand = (): void => {
       keybinding: NAVIGATOR_KEYBINDING,
     },
     async () => {
+      logseq.App.setLeftSidebarVisible(false)
       logseq.toggleMainUI()
     },
   )
@@ -61,7 +64,7 @@ const main = async (): Promise<void> => {
 
   applyDock()
 
-  logseq.setMainUIInlineStyle(NAVIGATOR_INLINE_STYLE)
+  setMainUIWidth(DEFAULT_PANE_WIDTH)
   mountApp()
   registerToggleCommand()
 
@@ -74,10 +77,12 @@ const main = async (): Promise<void> => {
 
   const stopSelectionSync = startSelectionSync()
   const stopDbRefresh = startDbRefresh()
+  const stopGraphSync = startGraphSync()
 
   logseq.beforeunload(async () => {
     stopSelectionSync()
     stopDbRefresh()
+    stopGraphSync()
     restoreDock()
   })
 }

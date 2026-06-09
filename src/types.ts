@@ -73,6 +73,12 @@ export interface Bookmark {
   isPage: boolean
 }
 
+export interface NavigatorConfig {
+  bookmarks: Bookmark[]
+  pinnedByFolder: Map<string, string[]>
+  width: number
+}
+
 export interface AppState {
   folders: FolderDef[]
   bookmarks: Bookmark[]
@@ -82,6 +88,7 @@ export interface AppState {
   selectedNodeUuid: string | null
   sort: Sort
   filter: string
+  width: number
   resultCache: Map<string, FolderResult>
 }
 

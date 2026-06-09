@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 
-import { DEFAULT_SORT } from '../constants'
+import { DEFAULT_PANE_WIDTH, DEFAULT_SORT } from '../constants'
 import type {
   AppState,
   Bookmark,
@@ -21,6 +21,7 @@ const createInitialState = (): AppState => {
     selectedNodeUuid: null,
     sort: DEFAULT_SORT,
     filter: '',
+    width: DEFAULT_PANE_WIDTH,
     resultCache: new Map<string, FolderResult>(),
   }
 }
@@ -53,6 +54,18 @@ const commitPatch = (patch: Partial<AppState>): void => {
 
 export const setFolders = (folders: FolderDef[]): void => {
   commitPatch({ folders: folders })
+}
+
+export const resetGraphState = (): void => {
+  commitPatch({
+    folders: [],
+    bookmarks: [],
+    pinnedByFolder: new Map<string, string[]>(),
+    selectedFolderId: null,
+    selectedNodeUuid: null,
+    filter: '',
+    resultCache: new Map<string, FolderResult>(),
+  })
 }
 
 export const setBookmarks = (bookmarks: Bookmark[]): void => {
@@ -89,6 +102,10 @@ export const setSort = (sort: Sort): void => {
 
 export const setFilter = (filter: string): void => {
   commitPatch({ filter: filter })
+}
+
+export const setWidth = (width: number): void => {
+  commitPatch({ width: width })
 }
 
 export const putResult = (folderId: string, result: FolderResult): void => {
