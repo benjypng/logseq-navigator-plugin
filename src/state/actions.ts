@@ -16,6 +16,7 @@ import type {
   TagInfo,
 } from '../types'
 import {
+  clearFolderSelection,
   getState,
   putResult,
   resetGraphState,
@@ -244,6 +245,52 @@ const nodesSignature = (nodes: NodeIdentity[]): string => {
     )
   })
   return parts.join('|')
+}
+
+const foldersSignature = (folders: FolderDef[]): string => {
+  const parts: string[] = []
+  folders.forEach((eachFolder) => {
+    parts.push(eachFolder.id + ':' + eachFolder.name)
+  })
+  return parts.join('|')
+}
+
+export const refreshFolders = async (): Promise<void> => {
+  let tags: TagInfo[] = []
+  try {
+    tags = await enumerateTags()
+  } catch {
+    tags = []
+  }
+  const folders = buildTagFolders(tags)
+  const state = getState()
+  if (foldersSignature(state.folders) === foldersSignature(folders)) {
+    return
+  }
+  setFolders(folders)
+  const selectedId = state.selectedFolderId
+  let stillExists = false
+  folders.forEach((eachFolder) => {
+    if (eachFolder.id === selectedId) {
+      stillExists = true
+    }
+  })
+  if (stillExists) {
+    return
+  }
+  const firstFolder = folders[0]
+  if (firstFolder !== undefined) {
+    await selectAndResolveFolder(firstFolder.id)
+  } else {
+    clearFolderSelection()
+  }
+}
+
+export const refreshAfterDbChange = async (
+  changedUuids: string[],
+): Promise<void> => {
+  await refreshFolders()
+  await refreshActiveFolder(changedUuids)
 }
 
 export const refreshActiveFolder = async (

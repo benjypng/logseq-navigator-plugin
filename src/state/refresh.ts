@@ -1,6 +1,6 @@
 import { DEFAULT_DEBOUNCE_MS } from '../constants'
 import { getNumberSetting, onDbChanged } from '../logseq/api'
-import { refreshActiveFolder } from './actions'
+import { refreshAfterDbChange } from './actions'
 
 const getDebounceMs = (): number => {
   const fromSettings = getNumberSetting('debounceMs')
@@ -23,7 +23,7 @@ export const startDbRefresh = (): (() => void) => {
     timer = setTimeout(() => {
       const uuids = Array.from(pendingUuids)
       pendingUuids = new Set<string>()
-      void refreshActiveFolder(uuids)
+      void refreshAfterDbChange(uuids)
     }, getDebounceMs())
   })
   return () => {

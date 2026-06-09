@@ -96,6 +96,16 @@ export const clearSelection = (): void => {
   commitPatch({ selectedNodeUuid: null })
 }
 
+export const clearFolderSelection = (): void => {
+  if (
+    currentState.selectedFolderId === null &&
+    currentState.selectedNodeUuid === null
+  ) {
+    return
+  }
+  commitPatch({ selectedFolderId: null, selectedNodeUuid: null })
+}
+
 export const setSort = (sort: Sort): void => {
   commitPatch({ sort: sort })
 }
