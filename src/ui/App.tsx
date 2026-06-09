@@ -1,6 +1,6 @@
 import {
-  type PointerEvent as ReactPointerEvent,
   type ReactElement,
+  type PointerEvent as ReactPointerEvent,
   useEffect,
   useRef,
 } from 'react'
