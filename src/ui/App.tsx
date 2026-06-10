@@ -6,7 +6,8 @@ import {
 } from 'react'
 
 import { MAX_PANE_WIDTH, MIN_PANE_WIDTH } from '../constants'
-import { hideUI, invokeSearch, setMainUIWidth } from '../logseq/api'
+import { hideRail, setRailWidth } from '../dock/dock-stub'
+import { invokeSearch } from '../logseq/api'
 import { loadFolders, resizePaneWidth } from '../state/actions'
 import { useAppState } from '../state/store'
 import { FolderPane } from './FolderPane'
@@ -48,7 +49,7 @@ export const App = (): ReactElement => {
     void loadFolders()
   }, [])
   useEffect(() => {
-    setMainUIWidth(state.width)
+    setRailWidth(state.width)
   }, [state.width])
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent): void => {
@@ -63,7 +64,7 @@ export const App = (): ReactElement => {
     }
   }, [])
   const handleClose = (): void => {
-    hideUI()
+    hideRail()
   }
   const handleResizePointerDown = (
     event: ReactPointerEvent<HTMLDivElement>,
@@ -78,7 +79,7 @@ export const App = (): ReactElement => {
     if (draggingRef.current === false) {
       return
     }
-    setMainUIWidth(clampWidth(event.clientX))
+    setRailWidth(clampWidth(event.clientX))
   }
   const handleResizePointerUp = (
     event: ReactPointerEvent<HTMLDivElement>,

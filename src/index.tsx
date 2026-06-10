@@ -9,12 +9,16 @@ import {
   NAVIGATOR_COMMAND_LABEL,
   NAVIGATOR_KEYBINDING,
 } from './constants'
-import { applyDock, restoreDock } from './dock/dock-stub'
+import {
+  restoreDock,
+  setRailWidth,
+  startDockVisibilitySync,
+  toggleRail,
+} from './dock/dock-stub'
 import {
   checkCurrentIsDbGraph,
   registerBlockBookmarkMenu,
   registerPageBookmarkMenu,
-  setMainUIWidth,
   showMessage,
 } from './logseq/api'
 import { settings } from './settings'
@@ -46,8 +50,7 @@ const registerToggleCommand = (): void => {
       keybinding: NAVIGATOR_KEYBINDING,
     },
     async () => {
-      logseq.App.setLeftSidebarVisible(false)
-      logseq.toggleMainUI()
+      toggleRail()
     },
   )
 }
@@ -62,9 +65,7 @@ const main = async (): Promise<void> => {
     return
   }
 
-  applyDock()
-
-  setMainUIWidth(DEFAULT_PANE_WIDTH)
+  setRailWidth(DEFAULT_PANE_WIDTH)
   mountApp()
   registerToggleCommand()
 
@@ -78,11 +79,13 @@ const main = async (): Promise<void> => {
   const stopSelectionSync = startSelectionSync()
   const stopDbRefresh = startDbRefresh()
   const stopGraphSync = startGraphSync()
+  const stopDockVisibilitySync = startDockVisibilitySync()
 
   logseq.beforeunload(async () => {
     stopSelectionSync()
     stopDbRefresh()
     stopGraphSync()
+    stopDockVisibilitySync()
     restoreDock()
   })
 }
