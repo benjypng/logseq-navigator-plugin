@@ -1,7 +1,9 @@
 import { readConfig, writeConfig } from '../config/config-page'
 import {
   DEFAULT_NODE_POLICY,
+  MAX_FOLDER_WIDTH,
   MAX_PANE_WIDTH,
+  MIN_FOLDER_WIDTH,
   MIN_PANE_WIDTH,
 } from '../constants'
 import { resolveFolder } from '../data/resolve'
@@ -23,6 +25,7 @@ import {
   selectFolder,
   setBookmarks,
   setFolders,
+  setFolderWidth,
   setPinnedByFolder,
   setWidth,
 } from './store'
@@ -104,6 +107,7 @@ export const loadConfig = async (): Promise<void> => {
     setBookmarks(config.bookmarks)
     setPinnedByFolder(config.pinnedByFolder)
     setWidth(config.width)
+    setFolderWidth(config.folderWidth)
   } catch {
     setBookmarks([])
     setPinnedByFolder(new Map<string, string[]>())
@@ -116,6 +120,7 @@ const persistConfig = async (): Promise<void> => {
     bookmarks: state.bookmarks,
     pinnedByFolder: state.pinnedByFolder,
     width: state.width,
+    folderWidth: state.folderWidth,
   })
 }
 
@@ -131,6 +136,21 @@ export const resizePaneWidth = async (width: number): Promise<void> => {
     return
   }
   setWidth(clamped)
+  await persistConfig()
+}
+
+export const resizeFolderWidth = async (width: number): Promise<void> => {
+  let clamped = Math.round(width)
+  if (clamped < MIN_FOLDER_WIDTH) {
+    clamped = MIN_FOLDER_WIDTH
+  }
+  if (clamped > MAX_FOLDER_WIDTH) {
+    clamped = MAX_FOLDER_WIDTH
+  }
+  if (clamped === getState().folderWidth) {
+    return
+  }
+  setFolderWidth(clamped)
   await persistConfig()
 }
 

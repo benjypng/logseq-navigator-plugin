@@ -5,11 +5,20 @@ import {
   useRef,
 } from 'react'
 
-import { MAX_PANE_WIDTH, MIN_PANE_WIDTH } from '../constants'
+import {
+  MAX_FOLDER_WIDTH,
+  MAX_PANE_WIDTH,
+  MIN_FOLDER_WIDTH,
+  MIN_PANE_WIDTH,
+} from '../constants'
 import { hideRail, setRailWidth } from '../dock/dock-stub'
 import { invokeSearch } from '../logseq/api'
-import { loadFolders, resizePaneWidth } from '../state/actions'
-import { useAppState } from '../state/store'
+import {
+  loadFolders,
+  resizeFolderWidth,
+  resizePaneWidth,
+} from '../state/actions'
+import { setFolderWidth, useAppState } from '../state/store'
 import { FolderPane } from './FolderPane'
 import { NodeListPane } from './NodeListPane'
 
@@ -19,6 +28,16 @@ const clampWidth = (value: number): number => {
   }
   if (value > MAX_PANE_WIDTH) {
     return MAX_PANE_WIDTH
+  }
+  return value
+}
+
+const clampFolderWidth = (value: number): number => {
+  if (value < MIN_FOLDER_WIDTH) {
+    return MIN_FOLDER_WIDTH
+  }
+  if (value > MAX_FOLDER_WIDTH) {
+    return MAX_FOLDER_WIDTH
   }
   return value
 }
@@ -45,6 +64,7 @@ const CloseIcon = (): ReactElement => {
 export const App = (): ReactElement => {
   const state = useAppState()
   const draggingRef = useRef(false)
+  const folderDraggingRef = useRef(false)
   useEffect(() => {
     void loadFolders()
   }, [])
@@ -91,6 +111,33 @@ export const App = (): ReactElement => {
     event.currentTarget.releasePointerCapture(event.pointerId)
     void resizePaneWidth(clampWidth(event.clientX))
   }
+  // The folder pane starts at the rail's left edge, so clientX is the divider's
+  // distance from that edge — i.e. the folder pane width.
+  const handleFolderResizePointerDown = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ): void => {
+    event.preventDefault()
+    event.currentTarget.setPointerCapture(event.pointerId)
+    folderDraggingRef.current = true
+  }
+  const handleFolderResizePointerMove = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ): void => {
+    if (folderDraggingRef.current === false) {
+      return
+    }
+    setFolderWidth(clampFolderWidth(event.clientX))
+  }
+  const handleFolderResizePointerUp = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ): void => {
+    if (folderDraggingRef.current === false) {
+      return
+    }
+    folderDraggingRef.current = false
+    event.currentTarget.releasePointerCapture(event.pointerId)
+    void resizeFolderWidth(clampFolderWidth(event.clientX))
+  }
   return (
     <div className="navigator-root">
       <button
@@ -103,6 +150,15 @@ export const App = (): ReactElement => {
         <CloseIcon />
       </button>
       <FolderPane />
+      <div
+        className="navigator-folder-resize-handle"
+        onPointerDown={handleFolderResizePointerDown}
+        onPointerMove={handleFolderResizePointerMove}
+        onPointerUp={handleFolderResizePointerUp}
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize folder pane"
+      />
       <NodeListPane />
       <div
         className="navigator-resize-handle"

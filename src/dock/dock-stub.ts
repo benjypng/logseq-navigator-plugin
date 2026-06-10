@@ -45,7 +45,6 @@ const buildDockStyle = (mainContainerId: string): string => {
   return `
     div#${mainContainerId} {
       background: var(--ls-primary-background-color);
-      border-right: 1px solid var(--lx-gray-09, #333);
     }
 
     div#root {

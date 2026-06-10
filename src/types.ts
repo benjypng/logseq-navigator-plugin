@@ -77,6 +77,7 @@ export interface NavigatorConfig {
   bookmarks: Bookmark[]
   pinnedByFolder: Map<string, string[]>
   width: number
+  folderWidth: number
 }
 
 export interface AppState {
@@ -89,6 +90,7 @@ export interface AppState {
   sort: Sort
   filter: string
   width: number
+  folderWidth: number
   resultCache: Map<string, FolderResult>
 }
 

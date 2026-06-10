@@ -108,7 +108,10 @@ export const FolderPane = (): ReactElement => {
   const partitioned = partitionFolders(state.folders)
 
   return (
-    <div className="navigator-folder-pane">
+    <div
+      className="navigator-folder-pane"
+      style={{ width: String(state.folderWidth) + 'px' }}
+    >
       <div className="navigator-folder-section">
         <div className="navigator-section-header">
           <span className="navigator-pane-header">Bookmarks</span>

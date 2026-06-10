@@ -1,6 +1,10 @@
 import { useSyncExternalStore } from 'react'
 
-import { DEFAULT_PANE_WIDTH, DEFAULT_SORT } from '../constants'
+import {
+  DEFAULT_FOLDER_WIDTH,
+  DEFAULT_PANE_WIDTH,
+  DEFAULT_SORT,
+} from '../constants'
 import type {
   AppState,
   Bookmark,
@@ -22,6 +26,7 @@ const createInitialState = (): AppState => {
     sort: DEFAULT_SORT,
     filter: '',
     width: DEFAULT_PANE_WIDTH,
+    folderWidth: DEFAULT_FOLDER_WIDTH,
     resultCache: new Map<string, FolderResult>(),
   }
 }
@@ -116,6 +121,10 @@ export const setFilter = (filter: string): void => {
 
 export const setWidth = (width: number): void => {
   commitPatch({ width: width })
+}
+
+export const setFolderWidth = (folderWidth: number): void => {
+  commitPatch({ folderWidth: folderWidth })
 }
 
 export const putResult = (folderId: string, result: FolderResult): void => {

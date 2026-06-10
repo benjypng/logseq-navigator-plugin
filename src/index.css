@@ -81,12 +81,27 @@ body {
 .navigator-folder-pane {
   display: flex;
   flex-direction: column;
-  width: 14rem;
-  min-width: 10rem;
+  flex: 0 0 auto;
   padding: 0.25rem 0;
   border-right: 1px solid var(--ls-border-color, #e5e7eb);
   background: var(--ls-secondary-background-color, #f7f7f8);
   overflow-y: auto;
+}
+
+.navigator-folder-resize-handle {
+  position: relative;
+  flex: 0 0 auto;
+  width: 5px;
+  margin-left: -3px;
+  z-index: 4;
+  cursor: col-resize;
+  background: transparent;
+  touch-action: none;
+}
+
+.navigator-folder-resize-handle:hover {
+  background: var(--ls-active-primary-color, #3b82f6);
+  opacity: 0.4;
 }
 
 .navigator-node-pane {

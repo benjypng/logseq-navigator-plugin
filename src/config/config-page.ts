@@ -4,8 +4,11 @@ import {
   CONFIG_FENCE_CLOSE,
   CONFIG_FENCE_OPEN,
   DEFAULT_CONFIG_PAGE_NAME,
+  DEFAULT_FOLDER_WIDTH,
   DEFAULT_PANE_WIDTH,
+  MAX_FOLDER_WIDTH,
   MAX_PANE_WIDTH,
+  MIN_FOLDER_WIDTH,
   MIN_PANE_WIDTH,
 } from '../constants'
 import {
@@ -36,6 +39,7 @@ const serializeConfig = (config: NavigatorConfig): unknown => {
     bookmarks: config.bookmarks,
     pins: pins,
     width: config.width,
+    folderWidth: config.folderWidth,
   }
 }
 
@@ -54,6 +58,23 @@ const validateWidth = (value: unknown): number => {
     return DEFAULT_PANE_WIDTH
   }
   return clampWidth(Math.round(value))
+}
+
+const clampFolderWidth = (value: number): number => {
+  if (value < MIN_FOLDER_WIDTH) {
+    return MIN_FOLDER_WIDTH
+  }
+  if (value > MAX_FOLDER_WIDTH) {
+    return MAX_FOLDER_WIDTH
+  }
+  return value
+}
+
+const validateFolderWidth = (value: unknown): number => {
+  if (typeof value !== 'number' || Number.isFinite(value) === false) {
+    return DEFAULT_FOLDER_WIDTH
+  }
+  return clampFolderWidth(Math.round(value))
 }
 
 const buildFencedJson = (config: NavigatorConfig): string => {
@@ -205,6 +226,7 @@ const emptyConfig = (): NavigatorConfig => {
     bookmarks: [],
     pinnedByFolder: new Map<string, string[]>(),
     width: DEFAULT_PANE_WIDTH,
+    folderWidth: DEFAULT_FOLDER_WIDTH,
   }
 }
 
@@ -224,6 +246,7 @@ const parseConfig = (jsonText: string): NavigatorConfig => {
       bookmarks: validateBookmarks(parsed),
       pinnedByFolder: new Map<string, string[]>(),
       width: DEFAULT_PANE_WIDTH,
+      folderWidth: DEFAULT_FOLDER_WIDTH,
     }
   }
   if (isRecord(parsed) === false) {
@@ -233,6 +256,7 @@ const parseConfig = (jsonText: string): NavigatorConfig => {
     bookmarks: validateBookmarks(parsed['bookmarks']),
     pinnedByFolder: validatePins(parsed['pins']),
     width: validateWidth(parsed['width']),
+    folderWidth: validateFolderWidth(parsed['folderWidth']),
   }
 }
 

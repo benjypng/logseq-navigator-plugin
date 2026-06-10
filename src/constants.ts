@@ -22,6 +22,10 @@ export const DEFAULT_PANE_WIDTH = 640
 export const MIN_PANE_WIDTH = 320
 export const MAX_PANE_WIDTH = 1200
 
+export const DEFAULT_FOLDER_WIDTH = 224
+export const MIN_FOLDER_WIDTH = 160
+export const MAX_FOLDER_WIDTH = 480
+
 export const DEFAULT_CONFIG_PAGE_NAME = 'Navigator/Config'
 
 export const DEFAULT_DEBOUNCE_MS = 400
