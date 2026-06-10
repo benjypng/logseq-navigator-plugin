@@ -7,7 +7,7 @@ import {
   MIN_PANE_WIDTH,
 } from '../constants'
 import { resolveFolder } from '../data/resolve'
-import { enumerateTags } from '../data/tags'
+import { enumerateTagCounts, enumerateTags } from '../data/tags'
 import { getBlockWithChildren, getPage, showMessage } from '../logseq/api'
 import type {
   Bookmark,
@@ -27,8 +27,17 @@ import {
   setFolders,
   setFolderWidth,
   setPinnedByFolder,
+  setTagCounts,
   setWidth,
 } from './store'
+
+export const loadTagCounts = async (): Promise<void> => {
+  try {
+    setTagCounts(await enumerateTagCounts())
+  } catch {
+    setTagCounts(new Map<string, number>())
+  }
+}
 
 const isUserDefinedTag = (ident: string | null): boolean => {
   if (ident === null) {
@@ -163,6 +172,7 @@ export const loadFolders = async (): Promise<void> => {
   }
   const folders = buildTagFolders(tags)
   setFolders(folders)
+  void loadTagCounts()
   await loadConfig()
   const state = getState()
   if (state.selectedFolderId === null && folders.length > 0) {
@@ -310,6 +320,7 @@ export const refreshAfterDbChange = async (
   changedUuids: string[],
 ): Promise<void> => {
   await refreshFolders()
+  void loadTagCounts()
   await refreshActiveFolder(changedUuids)
 }
 

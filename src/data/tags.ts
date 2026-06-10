@@ -60,6 +60,27 @@ export const enumerateTags = async (): Promise<TagInfo[]> => {
   return tags
 }
 
+export const enumerateTagCounts = async (): Promise<Map<string, number>> => {
+  // Count non-journal objects per tag in a single grouped query, so the folder
+  // list can show a page count without resolving every folder upfront.
+  const query =
+    '[:find ?tagUuid (count ?node)\n :where\n [?node :block/tags ?tag]\n [?tag :block/uuid ?tagUuid]\n (not [?node :block/journal-day ?journalDay])]'
+  const counts = new Map<string, number>()
+  try {
+    const rows = await runDatascriptQuery<[string, number][]>(query)
+    rows.forEach((eachRow) => {
+      const tagUuid = eachRow[0]
+      const count = eachRow[1]
+      if (typeof tagUuid === 'string' && typeof count === 'number') {
+        counts.set(tagUuid, count)
+      }
+    })
+  } catch {
+    return counts
+  }
+  return counts
+}
+
 const queryDirectSubclasses = async (parentUuid: string): Promise<string[]> => {
   if (isValidUuid(parentUuid) === false) {
     return []

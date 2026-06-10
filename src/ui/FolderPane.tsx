@@ -18,6 +18,7 @@ const kindGlyph = (kind: FolderDef['kind']): string => {
 interface FolderRowProps {
   folder: FolderDef
   isSelected: boolean
+  count: number | undefined
   onSelect: (folderId: string) => void
 }
 
@@ -35,6 +36,9 @@ const FolderRow = (props: FolderRowProps): ReactElement => {
           {kindGlyph(props.folder.kind)}
         </span>
         <span className="navigator-folder-name">{props.folder.name}</span>
+        {props.count === undefined ? null : (
+          <span className="navigator-folder-count">{props.count}</span>
+        )}
       </button>
     </li>
   )
@@ -160,6 +164,11 @@ export const FolderPane = (): ReactElement => {
                   key={eachFolder.id}
                   folder={eachFolder}
                   isSelected={eachFolder.id === state.selectedFolderId}
+                  count={
+                    eachFolder.kind === 'tag'
+                      ? state.tagCounts.get(eachFolder.tagUuid)
+                      : undefined
+                  }
                   onSelect={handleSelect}
                 />
               )

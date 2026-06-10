@@ -83,6 +83,7 @@ export interface NavigatorConfig {
 export interface AppState {
   folders: FolderDef[]
   bookmarks: Bookmark[]
+  tagCounts: Map<string, number>
 
   pinnedByFolder: Map<string, string[]>
   selectedFolderId: string | null

@@ -55,8 +55,8 @@ const CloseIcon = (): ReactElement => {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
+      <path d="M19 12H5" />
+      <path d="m12 19-7-7 7-7" />
     </svg>
   )
 }

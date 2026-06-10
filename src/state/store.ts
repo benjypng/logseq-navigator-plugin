@@ -20,6 +20,7 @@ const createInitialState = (): AppState => {
   return {
     folders: [],
     bookmarks: [],
+    tagCounts: new Map<string, number>(),
     pinnedByFolder: new Map<string, string[]>(),
     selectedFolderId: null,
     selectedNodeUuid: null,
@@ -61,10 +62,15 @@ export const setFolders = (folders: FolderDef[]): void => {
   commitPatch({ folders: folders })
 }
 
+export const setTagCounts = (tagCounts: Map<string, number>): void => {
+  commitPatch({ tagCounts: tagCounts })
+}
+
 export const resetGraphState = (): void => {
   commitPatch({
     folders: [],
     bookmarks: [],
+    tagCounts: new Map<string, number>(),
     pinnedByFolder: new Map<string, string[]>(),
     selectedFolderId: null,
     selectedNodeUuid: null,

@@ -299,9 +299,19 @@ body {
 }
 
 .navigator-folder-name {
+  flex: 1 1 auto;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.navigator-folder-count {
+  flex: 0 0 auto;
+  margin-left: 0.5rem;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ls-secondary-text-color, #9ca3af);
 }
 
 .navigator-node-header {
@@ -311,6 +321,25 @@ body {
   gap: 0.5rem;
   padding: 0.6rem 0.75rem;
   border-bottom: 1px solid var(--ls-border-color, #ececed);
+}
+
+.navigator-node-header-top {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.navigator-node-title-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ls-primary-text-color, #1f2329);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Segmented control: one filled track, active segment a solid accent fill. */
@@ -408,11 +437,11 @@ body {
 .navigator-node-row {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: stretch;
   gap: 0.5rem;
   height: calc(100% - 4px);
   margin: 2px 6px;
-  padding: 0.4rem 0.6rem;
+  padding: 0.45rem 0.6rem;
   border-radius: 8px;
   cursor: pointer;
   transition: background 120ms ease;
@@ -430,6 +459,8 @@ body {
 
 .navigator-node-icon {
   flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 0.1rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -454,11 +485,13 @@ body {
 
 .navigator-node-pin {
   flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 0.1rem;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 1.6rem;
-  height: 100%;
+  height: 1.2rem;
   border: none;
   background: transparent;
   color: var(--ls-secondary-text-color, #9ca3af);
@@ -489,8 +522,18 @@ body {
 
 .navigator-node-preview {
   font-size: 12px;
+  line-height: 1.35;
   color: var(--ls-secondary-text-color, #9ca3af);
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.navigator-node-date {
+  margin-top: auto;
+  padding-top: 0.2rem;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ls-secondary-text-color, #9ca3af);
 }

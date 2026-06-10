@@ -111,6 +111,7 @@ const SearchIcon = (): ReactElement => {
 interface NodeListHeaderProps {
   sort: Sort
   filter: string
+  folderName: string
 }
 
 const NodeListHeader = (props: NodeListHeaderProps): ReactElement => {
@@ -119,6 +120,28 @@ const NodeListHeader = (props: NodeListHeaderProps): ReactElement => {
   }
   return (
     <div className="navigator-node-header">
+      <div className="navigator-node-header-top">
+        <span className="navigator-node-title-label" title={props.folderName}>
+          {props.folderName}
+        </span>
+        <div className="navigator-sort-buttons">
+          <SortButton
+            label="Updated"
+            value={SORT_UPDATED}
+            activeSort={props.sort}
+          />
+          <SortButton
+            label="Created"
+            value={SORT_CREATED}
+            activeSort={props.sort}
+          />
+          <SortButton
+            label="Title"
+            value={SORT_TITLE}
+            activeSort={props.sort}
+          />
+        </div>
+      </div>
       <div className="navigator-filter-wrap">
         <span className="navigator-filter-icon">
           <SearchIcon />
@@ -130,19 +153,6 @@ const NodeListHeader = (props: NodeListHeaderProps): ReactElement => {
           value={props.filter}
           onChange={handleFilterChange}
         />
-      </div>
-      <div className="navigator-sort-buttons">
-        <SortButton
-          label="Updated"
-          value={SORT_UPDATED}
-          activeSort={props.sort}
-        />
-        <SortButton
-          label="Created"
-          value={SORT_CREATED}
-          activeSort={props.sort}
-        />
-        <SortButton label="Title" value={SORT_TITLE} activeSort={props.sort} />
       </div>
     </div>
   )
@@ -276,9 +286,20 @@ export const NodeListPane = (): ReactElement => {
     )
   }
 
+  let folderName = ''
+  for (const eachFolder of state.folders) {
+    if (eachFolder.id === state.selectedFolderId) {
+      folderName = eachFolder.name
+    }
+  }
+
   return (
     <div className="navigator-node-pane">
-      <NodeListHeader sort={state.sort} filter={state.filter} />
+      <NodeListHeader
+        sort={state.sort}
+        filter={state.filter}
+        folderName={folderName}
+      />
       <div className="navigator-node-scroll" ref={scrollRef}>
         <div
           className="navigator-virtual-spacer"

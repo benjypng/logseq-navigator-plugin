@@ -53,6 +53,17 @@ const BlockIcon = (): ReactElement => {
   )
 }
 
+const formatDate = (ms: number | null): string => {
+  if (ms === null) {
+    return ''
+  }
+  return new Date(ms).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
 const PinIcon = (props: { filled: boolean }): ReactElement => {
   return (
     <svg
@@ -83,6 +94,7 @@ export const NodeRow = (props: NodeRowProps): ReactElement => {
   const previewText = props.preview === undefined ? '' : props.preview.text
   const titleText =
     props.node.title.length > 0 ? props.node.title : '(untitled)'
+  const dateText = formatDate(props.node.updatedAt ?? props.node.createdAt)
   const className = props.isSelected
     ? 'navigator-node-row navigator-node-row-selected'
     : 'navigator-node-row'
@@ -101,6 +113,7 @@ export const NodeRow = (props: NodeRowProps): ReactElement => {
       <div className="navigator-node-text">
         <div className="navigator-node-title">{titleText}</div>
         <div className="navigator-node-preview">{previewText}</div>
+        <div className="navigator-node-date">{dateText}</div>
       </div>
       <button
         type="button"
