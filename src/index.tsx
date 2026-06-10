@@ -57,6 +57,7 @@ const registerToggleCommand = (): void => {
 }
 
 const main = async (): Promise<void> => {
+  logseq.UI.showMsg('Eror test', 'error')
   const isDbGraph = await checkCurrentIsDbGraph()
   if (isDbGraph === false) {
     showMessage(

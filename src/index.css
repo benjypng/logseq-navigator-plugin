@@ -83,7 +83,9 @@ body {
   flex-direction: column;
   width: 14rem;
   min-width: 10rem;
+  padding: 0.25rem 0;
   border-right: 1px solid var(--ls-border-color, #e5e7eb);
+  background: var(--ls-secondary-background-color, #f7f7f8);
   overflow-y: auto;
 }
 
@@ -92,16 +94,27 @@ body {
   flex-direction: column;
   flex: 1 1 auto;
   min-width: 0;
+  background: var(--ls-primary-background-color, #ffffff);
   overflow: hidden;
 }
 
 .navigator-pane-header {
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 0.75rem 0.35rem;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 11px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   color: var(--ls-secondary-text-color, #6b7280);
+}
+
+.navigator-pane-header-count {
+  margin-right: 0.75rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ls-secondary-text-color, #9ca3af);
+  background: var(--ls-tertiary-background-color, #ececed);
 }
 
 .navigator-empty {
@@ -231,7 +244,7 @@ body {
 .navigator-folder-list {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 6px;
 }
 
 .navigator-folder-row {
@@ -239,20 +252,29 @@ body {
   align-items: center;
   gap: 0.5rem;
   width: 100%;
-  padding: 0.4rem 0.75rem;
+  padding: 0.4rem 0.6rem;
   border: none;
+  border-radius: 7px;
   background: transparent;
   text-align: left;
   cursor: pointer;
   color: inherit;
+  transition: background 120ms ease;
 }
 
 .navigator-folder-row:hover {
-  background: var(--ls-tertiary-background-color, #f3f4f6);
+  background: var(--ls-tertiary-background-color, #ececed);
 }
 
-.navigator-folder-row-selected {
-  background: var(--ls-selection-background-color, #dbeafe);
+.navigator-folder-row-selected,
+.navigator-folder-row-selected:hover {
+  background: var(--ls-selection-background-color, #e4ecff);
+  box-shadow: inset 3px 0 0 var(--ls-active-primary-color, #3b82f6);
+  font-weight: 600;
+}
+
+.navigator-folder-row-selected .navigator-folder-name {
+  color: var(--ls-active-primary-color, #3b82f6);
 }
 
 .navigator-folder-kind {
@@ -272,38 +294,81 @@ body {
   flex-direction: column;
   align-items: stretch;
   gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--ls-border-color, #e5e7eb);
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--ls-border-color, #ececed);
 }
 
+/* Segmented control: one filled track, active segment a solid accent fill. */
 .navigator-sort-buttons {
   display: flex;
-  gap: 0.25rem;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--ls-secondary-background-color, #f0f0f1);
 }
 
 .navigator-sort-button {
-  padding: 0.2rem 0.5rem;
-  border: 1px solid var(--ls-border-color, #e5e7eb);
-  border-radius: 4px;
+  flex: 1 1 0;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  border-radius: 6px;
   background: transparent;
   cursor: pointer;
-  color: inherit;
+  color: var(--ls-secondary-text-color, #6b7280);
   font-size: 12px;
+  font-weight: 500;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
 }
 
-.navigator-sort-button-active {
-  background: var(--ls-selection-background-color, #dbeafe);
-  border-color: var(--ls-active-primary-color, #3b82f6);
+.navigator-sort-button:hover {
+  color: var(--ls-primary-text-color, #1f2329);
+}
+
+.navigator-sort-button-active,
+.navigator-sort-button-active:hover {
+  background: var(--ls-active-primary-color, #3b82f6);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.navigator-filter-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.navigator-filter-icon {
+  position: absolute;
+  left: 0.5rem;
+  display: flex;
+  pointer-events: none;
+  color: var(--ls-secondary-text-color, #9ca3af);
 }
 
 .navigator-filter-input {
   flex: 0 0 auto;
+  width: 100%;
   min-width: 0;
-  padding: 0.25rem 0.5rem;
-  border: 1px solid var(--ls-border-color, #e5e7eb);
-  border-radius: 4px;
-  background: var(--ls-primary-background-color, #ffffff);
+  padding: 0.35rem 0.5rem 0.35rem 1.8rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--ls-secondary-background-color, #f0f0f1);
   color: inherit;
+  outline: none;
+  transition:
+    background 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.navigator-filter-input::placeholder {
+  color: var(--ls-secondary-text-color, #9ca3af);
+}
+
+.navigator-filter-input:focus {
+  background: var(--ls-primary-background-color, #ffffff);
+  box-shadow: 0 0 0 2px var(--ls-active-primary-color, #3b82f6);
 }
 
 .navigator-node-scroll {
@@ -314,14 +379,14 @@ body {
 
 .navigator-date-group {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   height: 100%;
-  padding: 0 0.75rem;
-  font-size: 11px;
+  padding: 0 0.85rem 0.25rem;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--ls-secondary-text-color, #6b7280);
+  letter-spacing: 0.07em;
+  color: var(--ls-secondary-text-color, #9ca3af);
   background: var(--ls-primary-background-color, #ffffff);
 }
 
@@ -330,18 +395,22 @@ body {
   flex-direction: row;
   align-items: center;
   gap: 0.5rem;
-  height: 100%;
-  padding: 0.4rem 0.75rem;
-  border-bottom: 1px solid var(--ls-border-color, #f1f1f1);
+  height: calc(100% - 4px);
+  margin: 2px 6px;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
   cursor: pointer;
+  transition: background 120ms ease;
 }
 
 .navigator-node-row:hover {
-  background: var(--ls-tertiary-background-color, #f3f4f6);
+  background: var(--ls-tertiary-background-color, #ececed);
 }
 
-.navigator-node-row-selected {
-  background: var(--ls-selection-background-color, #dbeafe);
+.navigator-node-row-selected,
+.navigator-node-row-selected:hover {
+  background: var(--ls-selection-background-color, #e4ecff);
+  box-shadow: inset 3px 0 0 var(--ls-active-primary-color, #3b82f6);
 }
 
 .navigator-node-icon {
@@ -392,14 +461,20 @@ body {
 }
 
 .navigator-node-title {
-  font-weight: 500;
+  font-weight: 600;
+  color: var(--ls-primary-text-color, #1f2329);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.navigator-node-row-selected .navigator-node-title {
+  color: var(--ls-active-primary-color, #3b82f6);
+}
+
 .navigator-node-preview {
-  color: var(--ls-secondary-text-color, #6b7280);
+  font-size: 12px;
+  color: var(--ls-secondary-text-color, #9ca3af);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

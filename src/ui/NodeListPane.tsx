@@ -89,6 +89,25 @@ const SortButton = (props: SortButtonProps): ReactElement => {
   )
 }
 
+const SearchIcon = (): ReactElement => {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="7" />
+      <path d="m21 21-4.3-4.3" />
+    </svg>
+  )
+}
+
 interface NodeListHeaderProps {
   sort: Sort
   filter: string
@@ -100,13 +119,18 @@ const NodeListHeader = (props: NodeListHeaderProps): ReactElement => {
   }
   return (
     <div className="navigator-node-header">
-      <input
-        className="navigator-filter-input"
-        type="text"
-        placeholder="Filter…"
-        value={props.filter}
-        onChange={handleFilterChange}
-      />
+      <div className="navigator-filter-wrap">
+        <span className="navigator-filter-icon">
+          <SearchIcon />
+        </span>
+        <input
+          className="navigator-filter-input"
+          type="text"
+          placeholder="Filter…"
+          value={props.filter}
+          onChange={handleFilterChange}
+        />
+      </div>
       <div className="navigator-sort-buttons">
         <SortButton
           label="Updated"

@@ -112,6 +112,11 @@ export const FolderPane = (): ReactElement => {
       <div className="navigator-folder-section">
         <div className="navigator-section-header">
           <span className="navigator-pane-header">Bookmarks</span>
+          {state.bookmarks.length > 0 ? (
+            <span className="navigator-pane-header-count">
+              {state.bookmarks.length}
+            </span>
+          ) : null}
         </div>
         {state.bookmarks.length === 0 ? (
           <div className="navigator-empty">
@@ -136,6 +141,11 @@ export const FolderPane = (): ReactElement => {
       <div className="navigator-folder-section">
         <div className="navigator-section-header">
           <span className="navigator-pane-header">Tags</span>
+          {partitioned.tags.length > 0 ? (
+            <span className="navigator-pane-header-count">
+              {partitioned.tags.length}
+            </span>
+          ) : null}
         </div>
         {partitioned.tags.length === 0 ? (
           <div className="navigator-empty">No tags found.</div>
