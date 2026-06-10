@@ -57,7 +57,8 @@ const registerToggleCommand = (): void => {
 }
 
 const main = async (): Promise<void> => {
-  logseq.UI.showMsg('Eror test', 'error')
+  logseq.UI.showMsg('logseq-navigator-plugin loaded', 'success')
+
   const isDbGraph = await checkCurrentIsDbGraph()
   if (isDbGraph === false) {
     showMessage(
