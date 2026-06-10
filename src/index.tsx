@@ -10,6 +10,7 @@ import {
   NAVIGATOR_KEYBINDING,
 } from './constants'
 import {
+  hideRail,
   restoreDock,
   setRailWidth,
   startDockVisibilitySync,
@@ -66,6 +67,10 @@ const main = async (): Promise<void> => {
   }
 
   setRailWidth(DEFAULT_PANE_WIDTH)
+  // Force a known closed state on load: Logseq may restore the iframe as
+  // visible across reloads, which would leave railVisible out of sync (margin
+  // 0 while the rail paints over #root). Start hidden; first toggle opens it.
+  hideRail()
   mountApp()
   registerToggleCommand()
 

@@ -14,6 +14,26 @@ const buildDockStyle = (mainContainerId: string): string => {
   // pushes #root itself — this margin is the ONLY thing reserving its space.
   // Hidden → 0 margin → app reclaims full width, no empty band.
   const margin = railVisible ? String(railWidth) + 'px' : '0px'
+
+  // Logseq's left sidebar is a position:fixed drawer pinned to the viewport's
+  // left edge, so #root's margin doesn't move it — without this it slides in
+  // *underneath* the rail. Shift it to start at the rail's right edge so the
+  // order is rail · left sidebar · main · right sidebar. Only while visible;
+  // when hidden we leave it untouched so it returns to left:0.
+  const leftSidebarShift = railVisible
+    ? `div#left-sidebar { left: ${margin} !important; }`
+    : ''
+
+  // The header reserves 78px on the left for the macOS traffic-light buttons.
+  // Once the rail covers that corner, the gutter is wasted — collapse it to
+  // 10px. Only while visible, so the gutter returns when the rail is closed.
+  // The 78px macOS traffic-light gutter is `.is-electron.is-mac .cp__header>.l`
+  // (the .l row inside #head). Collapse it to 10px while the rail covers that
+  // corner; !important + the #head id outweighs the original rule.
+  const headerGutter = railVisible
+    ? `div#head > .l { padding-left: 10px !important; }`
+    : ''
+
   return `
     div#${mainContainerId} {
       background: var(--ls-primary-background-color);
@@ -24,6 +44,10 @@ const buildDockStyle = (mainContainerId: string): string => {
       margin-left: ${margin} !important;
       width: calc(100% - ${margin}) !important;
     }
+
+    ${leftSidebarShift}
+
+    ${headerGutter}
 
     div.preboot-loading {
       display: none !important;
