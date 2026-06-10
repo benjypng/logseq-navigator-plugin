@@ -269,7 +269,8 @@ body {
 
 .navigator-node-header {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
   border-bottom: 1px solid var(--ls-border-color, #e5e7eb);
@@ -296,7 +297,7 @@ body {
 }
 
 .navigator-filter-input {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
   padding: 0.25rem 0.5rem;
   border: 1px solid var(--ls-border-color, #e5e7eb);

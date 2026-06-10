@@ -100,6 +100,13 @@ const NodeListHeader = (props: NodeListHeaderProps): ReactElement => {
   }
   return (
     <div className="navigator-node-header">
+      <input
+        className="navigator-filter-input"
+        type="text"
+        placeholder="Filter…"
+        value={props.filter}
+        onChange={handleFilterChange}
+      />
       <div className="navigator-sort-buttons">
         <SortButton
           label="Updated"
@@ -113,13 +120,6 @@ const NodeListHeader = (props: NodeListHeaderProps): ReactElement => {
         />
         <SortButton label="Title" value={SORT_TITLE} activeSort={props.sort} />
       </div>
-      <input
-        className="navigator-filter-input"
-        type="text"
-        placeholder="Filter…"
-        value={props.filter}
-        onChange={handleFilterChange}
-      />
     </div>
   )
 }
