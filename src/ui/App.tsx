@@ -3,6 +3,7 @@ import {
   type PointerEvent as ReactPointerEvent,
   useEffect,
   useRef,
+  useState,
 } from 'react'
 
 import {
@@ -12,7 +13,7 @@ import {
   MIN_PANE_WIDTH,
 } from '../constants'
 import { hideRail, setRailWidth } from '../dock/dock-stub'
-import { invokeSearch } from '../logseq/api'
+import { getThemeMode, invokeSearch, onThemeModeChanged } from '../logseq/api'
 import {
   loadFolders,
   resizeFolderWidth,
@@ -65,8 +66,22 @@ export const App = (): ReactElement => {
   const state = useAppState()
   const draggingRef = useRef(false)
   const folderDraggingRef = useRef(false)
+  const [colorScheme, setColorScheme] = useState<'light' | 'dark'>('light')
   useEffect(() => {
     void loadFolders()
+  }, [])
+  // The plugin iframe doesn't inherit Logseq's light/dark theme, so track the
+  // mode ourselves and flip our own palette via the data-theme attribute.
+  useEffect(() => {
+    void getThemeMode().then((mode) => {
+      setColorScheme(mode)
+    })
+    const cleanup = onThemeModeChanged((mode) => {
+      setColorScheme(mode)
+    })
+    return () => {
+      cleanup()
+    }
   }, [])
   useEffect(() => {
     setRailWidth(state.width)
@@ -139,7 +154,7 @@ export const App = (): ReactElement => {
     void resizeFolderWidth(clampFolderWidth(event.clientX))
   }
   return (
-    <div className="navigator-root">
+    <div className="navigator-root" data-theme={colorScheme}>
       <button
         type="button"
         className="navigator-close-button"

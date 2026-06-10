@@ -41,7 +41,7 @@ export const DEFAULT_NODE_POLICY: NodePolicy = {
   includeJournal: false,
 }
 
-export const VIRTUAL_ROW_HEIGHT = 96
+export const VIRTUAL_ROW_HEIGHT = 104
 export const VIRTUAL_HEADER_HEIGHT = 28
 export const VIRTUAL_OVERSCAN = 8
 

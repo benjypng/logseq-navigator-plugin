@@ -145,6 +145,24 @@ export const onGraphChanged = (callback: () => void): (() => void) => {
   return off
 }
 
+export const getThemeMode = async (): Promise<'light' | 'dark'> => {
+  try {
+    const configs = await logseq.App.getUserConfigs()
+    return configs.preferredThemeMode === 'dark' ? 'dark' : 'light'
+  } catch {
+    return 'light'
+  }
+}
+
+export const onThemeModeChanged = (
+  callback: (mode: 'light' | 'dark') => void,
+): (() => void) => {
+  const off = logseq.App.onThemeModeChanged((event) => {
+    callback(event.mode)
+  })
+  return off
+}
+
 export const onDbChanged = (
   callback: (changedUuids: string[]) => void,
 ): (() => void) => {

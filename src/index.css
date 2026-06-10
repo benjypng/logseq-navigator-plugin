@@ -9,6 +9,17 @@ body {
 }
 
 .navigator-root {
+  /* Self-contained palette: the plugin iframe doesn't inherit Logseq's theme
+     vars, so we define them here and flip them on [data-theme="dark"]. */
+  --ls-primary-background-color: #ffffff;
+  --ls-secondary-background-color: #f7f7f8;
+  --ls-tertiary-background-color: #ececed;
+  --ls-primary-text-color: #1f2329;
+  --ls-secondary-text-color: #6b7280;
+  --ls-border-color: #e5e7eb;
+  --ls-active-primary-color: #3b82f6;
+  --ls-selection-background-color: #dbe5ff;
+
   position: relative;
   display: flex;
   flex-direction: row;
@@ -18,7 +29,7 @@ body {
 
   padding: 2.5rem 0 0 0;
   border-radius: 0;
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(
     --ls-font-family,
     -apple-system,
@@ -32,6 +43,17 @@ body {
   color: var(--ls-primary-text-color, #1f2329);
   background: var(--ls-primary-background-color, #ffffff);
   overflow: hidden;
+}
+
+.navigator-root[data-theme="dark"] {
+  --ls-primary-background-color: #1c1e21;
+  --ls-secondary-background-color: #25282c;
+  --ls-tertiary-background-color: #30343a;
+  --ls-primary-text-color: #e6e8eb;
+  --ls-secondary-text-color: #9aa0a6;
+  --ls-border-color: #383b41;
+  --ls-active-primary-color: #5b8def;
+  --ls-selection-background-color: #2a3550;
 }
 
 .navigator-root button,
@@ -117,7 +139,7 @@ body {
   padding: 0.5rem 0.75rem 0.35rem;
   font-weight: 600;
   text-transform: uppercase;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.06em;
   color: var(--ls-secondary-text-color, #6b7280);
 }
@@ -126,7 +148,7 @@ body {
   margin-right: 0.75rem;
   padding: 0.05rem 0.4rem;
   border-radius: 999px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--ls-secondary-text-color, #9ca3af);
   background: var(--ls-tertiary-background-color, #ececed);
@@ -158,7 +180,7 @@ body {
   border-radius: 4px;
   background: transparent;
   color: var(--ls-secondary-text-color, #6b7280);
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1;
   cursor: pointer;
 }
@@ -211,7 +233,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--ls-secondary-text-color, #6b7280);
 }
 
@@ -228,7 +250,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .navigator-form-actions {
@@ -259,7 +281,7 @@ body {
 .navigator-folder-list {
   list-style: none;
   margin: 0;
-  padding: 0 6px;
+  padding: 0;
 }
 
 .navigator-folder-row {
@@ -267,9 +289,8 @@ body {
   align-items: center;
   gap: 0.5rem;
   width: 100%;
-  padding: 0.4rem 0.6rem;
+  padding: 0.35rem 0.75rem;
   border: none;
-  border-radius: 7px;
   background: transparent;
   text-align: left;
   cursor: pointer;
@@ -279,17 +300,23 @@ body {
 
 .navigator-folder-row:hover {
   background: var(--ls-tertiary-background-color, #ececed);
+  background: color-mix(
+    in srgb,
+    var(--ls-primary-text-color, #1f2329) 7%,
+    transparent
+  );
 }
 
 .navigator-folder-row-selected,
 .navigator-folder-row-selected:hover {
-  background: var(--ls-selection-background-color, #e4ecff);
+  background: var(--ls-selection-background-color, #dbe5ff);
+  background: color-mix(
+    in srgb,
+    var(--ls-active-primary-color, #3b82f6) 16%,
+    transparent
+  );
   box-shadow: inset 3px 0 0 var(--ls-active-primary-color, #3b82f6);
   font-weight: 600;
-}
-
-.navigator-folder-row-selected .navigator-folder-name {
-  color: var(--ls-active-primary-color, #3b82f6);
 }
 
 .navigator-folder-kind {
@@ -309,9 +336,10 @@ body {
 .navigator-folder-count {
   flex: 0 0 auto;
   margin-left: 0.5rem;
-  font-size: 11px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
-  color: var(--ls-secondary-text-color, #9ca3af);
+  color: var(--ls-primary-text-color, #1f2329);
+  opacity: 0.5;
 }
 
 .navigator-node-header {
@@ -334,7 +362,7 @@ body {
 .navigator-node-title-label {
   flex: 1 1 auto;
   min-width: 0;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--ls-primary-text-color, #1f2329);
   overflow: hidden;
@@ -359,7 +387,7 @@ body {
   background: transparent;
   cursor: pointer;
   color: var(--ls-secondary-text-color, #6b7280);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   transition:
     background 120ms ease,
@@ -425,12 +453,13 @@ body {
   display: flex;
   align-items: flex-end;
   height: 100%;
-  padding: 0 0.85rem 0.25rem;
-  font-size: 10px;
-  font-weight: 600;
+  padding: 0 0.75rem 0.3rem;
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  color: var(--ls-secondary-text-color, #9ca3af);
+  color: var(--ls-primary-text-color, #1f2329);
+  opacity: 0.55;
   background: var(--ls-primary-background-color, #ffffff);
 }
 
@@ -438,22 +467,31 @@ body {
   display: flex;
   flex-direction: row;
   align-items: stretch;
-  gap: 0.5rem;
-  height: calc(100% - 4px);
-  margin: 2px 6px;
-  padding: 0.45rem 0.6rem;
-  border-radius: 8px;
+  gap: 0.6rem;
+  height: 100%;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--ls-border-color, #e5e7eb);
   cursor: pointer;
   transition: background 120ms ease;
 }
 
 .navigator-node-row:hover {
   background: var(--ls-tertiary-background-color, #ececed);
+  background: color-mix(
+    in srgb,
+    var(--ls-primary-text-color, #1f2329) 7%,
+    transparent
+  );
 }
 
 .navigator-node-row-selected,
 .navigator-node-row-selected:hover {
-  background: var(--ls-selection-background-color, #e4ecff);
+  background: var(--ls-selection-background-color, #dbe5ff);
+  background: color-mix(
+    in srgb,
+    var(--ls-active-primary-color, #3b82f6) 16%,
+    transparent
+  );
   box-shadow: inset 3px 0 0 var(--ls-active-primary-color, #3b82f6);
 }
 
@@ -516,14 +554,11 @@ body {
   white-space: nowrap;
 }
 
-.navigator-node-row-selected .navigator-node-title {
-  color: var(--ls-active-primary-color, #3b82f6);
-}
-
 .navigator-node-preview {
-  font-size: 12px;
-  line-height: 1.35;
-  color: var(--ls-secondary-text-color, #9ca3af);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ls-primary-text-color, #1f2329);
+  opacity: 0.64;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -533,7 +568,8 @@ body {
 .navigator-node-date {
   margin-top: auto;
   padding-top: 0.2rem;
-  font-size: 11px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
-  color: var(--ls-secondary-text-color, #9ca3af);
+  color: var(--ls-primary-text-color, #1f2329);
+  opacity: 0.5;
 }
