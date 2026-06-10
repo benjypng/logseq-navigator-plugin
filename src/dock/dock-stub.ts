@@ -34,6 +34,14 @@ const buildDockStyle = (mainContainerId: string): string => {
     ? `div#head > .l { padding-left: 10px !important; }`
     : ''
 
+  // The toast container is position:fixed with width:100% but no explicit left,
+  // so it inherits its static position inside #root (shifted right by margin)
+  // and its full-width box overflows the viewport, carrying the right-aligned
+  // toast off-screen. Pin it to the viewport so it ignores that offset.
+  const toastFix = railVisible
+    ? `div.ui__notifications { left: 0 !important; right: 0 !important; width: auto !important; }`
+    : ''
+
   return `
     div#${mainContainerId} {
       background: var(--ls-primary-background-color);
@@ -48,6 +56,8 @@ const buildDockStyle = (mainContainerId: string): string => {
     ${leftSidebarShift}
 
     ${headerGutter}
+
+    ${toastFix}
 
     div.preboot-loading {
       display: none !important;
