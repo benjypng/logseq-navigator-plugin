@@ -1,7 +1,11 @@
 import type { ReactElement } from 'react'
 
 import { navigateToNode } from '../logseq/api'
-import { removeBookmark, selectAndResolveFolder } from '../state/actions'
+import {
+  removeBookmark,
+  removePageRefFolder,
+  selectAndResolveFolder,
+} from '../state/actions'
 import { useAppState } from '../state/store'
 import type { Bookmark, FolderDef } from '../types'
 
@@ -81,19 +85,64 @@ const BookmarkRow = (props: BookmarkRowProps): ReactElement => {
   )
 }
 
+interface PageRefRowProps {
+  folder: FolderDef
+  isSelected: boolean
+  count: number | undefined
+  onSelect: (folderId: string) => void
+  onRemove: (folderId: string) => void
+}
+
+const PageRefRow = (props: PageRefRowProps): ReactElement => {
+  const handleClick = (): void => {
+    props.onSelect(props.folder.id)
+  }
+  const handleRemove = (): void => {
+    props.onRemove(props.folder.id)
+  }
+  const className = props.isSelected
+    ? 'navigator-folder-row navigator-folder-row-selected'
+    : 'navigator-folder-row'
+  return (
+    <li className="navigator-folder-item navigator-pageref-item">
+      <button type="button" className={className} onClick={handleClick}>
+        <span className="navigator-folder-kind">
+          {kindGlyph(props.folder.kind)}
+        </span>
+        <span className="navigator-folder-name">{props.folder.name}</span>
+        {props.count === undefined ? null : (
+          <span className="navigator-folder-count">{props.count}</span>
+        )}
+      </button>
+      <button
+        type="button"
+        className="navigator-folder-remove"
+        title="Remove page reference"
+        aria-label="Remove page reference"
+        onClick={handleRemove}
+      >
+        ×
+      </button>
+    </li>
+  )
+}
+
 const partitionFolders = (
   folders: FolderDef[],
-): { tags: FolderDef[]; queries: FolderDef[] } => {
+): { tags: FolderDef[]; pageRefs: FolderDef[]; queries: FolderDef[] } => {
   const tags: FolderDef[] = []
+  const pageRefs: FolderDef[] = []
   const queries: FolderDef[] = []
   folders.forEach((eachFolder) => {
     if (eachFolder.kind === 'tag') {
       tags.push(eachFolder)
+    } else if (eachFolder.kind === 'page-refs') {
+      pageRefs.push(eachFolder)
     } else {
       queries.push(eachFolder)
     }
   })
-  return { tags: tags, queries: queries }
+  return { tags: tags, pageRefs: pageRefs, queries: queries }
 }
 
 export const FolderPane = (): ReactElement => {
@@ -107,6 +156,9 @@ export const FolderPane = (): ReactElement => {
   }
   const handleRemoveBookmark = (uuid: string): void => {
     void removeBookmark(uuid)
+  }
+  const handleRemovePageRef = (folderId: string): void => {
+    void removePageRefFolder(folderId)
   }
 
   const partitioned = partitionFolders(state.folders)
@@ -127,7 +179,7 @@ export const FolderPane = (): ReactElement => {
         </div>
         {state.bookmarks.length === 0 ? (
           <div className="navigator-empty">
-            Right-click a page or block → Bookmark.
+            Right-click a page or block → Navigator: Add as Bookmark.
           </div>
         ) : (
           <ul className="navigator-folder-list">
@@ -179,9 +231,33 @@ export const FolderPane = (): ReactElement => {
 
       <div className="navigator-folder-section">
         <div className="navigator-section-header">
-          <span className="navigator-pane-header">Queries</span>
+          <span className="navigator-pane-header">Page References</span>
+          {partitioned.pageRefs.length > 0 ? (
+            <span className="navigator-pane-header-count">
+              {partitioned.pageRefs.length}
+            </span>
+          ) : null}
         </div>
-        <div className="navigator-empty">Coming soon.</div>
+        {partitioned.pageRefs.length === 0 ? (
+          <div className="navigator-empty">
+            Right-click a page → Navigator: Add as Page Reference.
+          </div>
+        ) : (
+          <ul className="navigator-folder-list">
+            {partitioned.pageRefs.map((eachFolder) => {
+              return (
+                <PageRefRow
+                  key={eachFolder.id}
+                  folder={eachFolder}
+                  isSelected={eachFolder.id === state.selectedFolderId}
+                  count={state.pageRefCounts.get(eachFolder.id)}
+                  onSelect={handleSelect}
+                  onRemove={handleRemovePageRef}
+                />
+              )
+            })}
+          </ul>
+        )}
       </div>
     </div>
   )

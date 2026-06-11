@@ -22,10 +22,11 @@ import {
   getBooleanSetting,
   registerBlockBookmarkMenu,
   registerPageBookmarkMenu,
+  registerPageRefsMenu,
   showMessage,
 } from './logseq/api'
 import { settings } from './settings'
-import { bookmarkBlock, bookmarkPage } from './state/actions'
+import { addPageRef, bookmarkBlock, bookmarkPage } from './state/actions'
 import { startGraphSync } from './state/graph-sync'
 import { startDbRefresh } from './state/refresh'
 import { startSelectionSync } from './state/selection-sync'
@@ -87,6 +88,9 @@ const main = async (): Promise<void> => {
   })
   registerPageBookmarkMenu((pageName) => {
     void bookmarkPage(pageName)
+  })
+  registerPageRefsMenu((pageName) => {
+    void addPageRef(pageName)
   })
 
   const stopSelectionSync = startSelectionSync()

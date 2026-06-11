@@ -218,6 +218,20 @@ body {
   color: var(--ls-primary-text-color, #1f2329);
 }
 
+/* Page-ref rows show the count at rest and swap it for the remove
+   button while the row is hovered. */
+.navigator-pageref-item .navigator-folder-remove {
+  display: none;
+}
+
+.navigator-pageref-item:hover .navigator-folder-remove {
+  display: block;
+}
+
+.navigator-pageref-item:hover .navigator-folder-count {
+  display: none;
+}
+
 .navigator-form {
   display: flex;
   flex-direction: column;

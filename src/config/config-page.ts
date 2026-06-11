@@ -20,7 +20,7 @@ import {
   getStringSetting,
   updateBlock,
 } from '../logseq/api'
-import type { Bookmark, NavigatorConfig } from '../types'
+import type { Bookmark, NavigatorConfig, PageRefDef } from '../types'
 
 export const getConfigPageName = (): string => {
   const fromSettings = getStringSetting('configPageName')
@@ -37,6 +37,7 @@ const serializeConfig = (config: NavigatorConfig): unknown => {
   })
   return {
     bookmarks: config.bookmarks,
+    pageRefs: config.pageRefs,
     pins: pins,
     width: config.width,
     folderWidth: config.folderWidth,
@@ -200,6 +201,36 @@ const validateBookmarks = (value: unknown): Bookmark[] => {
   return bookmarks
 }
 
+const validatePageRefs = (value: unknown): PageRefDef[] => {
+  if (Array.isArray(value) === false) {
+    return []
+  }
+  const pageRefs: PageRefDef[] = []
+  const seen = new Set<string>()
+  value.forEach((eachEntry) => {
+    if (isRecord(eachEntry) === false) {
+      return
+    }
+    const record = eachEntry as Record<string, unknown>
+    const uuid = record['uuid']
+    if (typeof uuid !== 'string' || uuid.length === 0 || seen.has(uuid)) {
+      return
+    }
+    const pageName = record['pageName']
+    if (typeof pageName !== 'string' || pageName.length === 0) {
+      return
+    }
+    seen.add(uuid)
+    const title = record['title']
+    pageRefs.push({
+      uuid: uuid,
+      pageName: pageName,
+      title: typeof title === 'string' ? title : pageName,
+    })
+  })
+  return pageRefs
+}
+
 const validatePins = (value: unknown): Map<string, string[]> => {
   const map = new Map<string, string[]>()
   if (isRecord(value) === false) {
@@ -224,6 +255,7 @@ const validatePins = (value: unknown): Map<string, string[]> => {
 const emptyConfig = (): NavigatorConfig => {
   return {
     bookmarks: [],
+    pageRefs: [],
     pinnedByFolder: new Map<string, string[]>(),
     width: DEFAULT_PANE_WIDTH,
     folderWidth: DEFAULT_FOLDER_WIDTH,
@@ -244,6 +276,7 @@ const parseConfig = (jsonText: string): NavigatorConfig => {
   if (Array.isArray(parsed)) {
     return {
       bookmarks: validateBookmarks(parsed),
+      pageRefs: [],
       pinnedByFolder: new Map<string, string[]>(),
       width: DEFAULT_PANE_WIDTH,
       folderWidth: DEFAULT_FOLDER_WIDTH,
@@ -254,6 +287,7 @@ const parseConfig = (jsonText: string): NavigatorConfig => {
   }
   return {
     bookmarks: validateBookmarks(parsed['bookmarks']),
+    pageRefs: validatePageRefs(parsed['pageRefs']),
     pinnedByFolder: validatePins(parsed['pins']),
     width: validateWidth(parsed['width']),
     folderWidth: validateFolderWidth(parsed['folderWidth']),

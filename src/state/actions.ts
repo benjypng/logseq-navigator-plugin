@@ -5,6 +5,7 @@ import {
   MAX_PANE_WIDTH,
   MIN_FOLDER_WIDTH,
   MIN_PANE_WIDTH,
+  PAGE_REFS_FOLDER_PREFIX,
 } from '../constants'
 import { resolveFolder } from '../data/resolve'
 import { enumerateTagCounts, enumerateTags } from '../data/tags'
@@ -14,6 +15,7 @@ import type {
   FolderDef,
   FolderResult,
   NodeIdentity,
+  PageRefDef,
   Preview,
   TagInfo,
 } from '../types'
@@ -26,6 +28,8 @@ import {
   setBookmarks,
   setFolders,
   setFolderWidth,
+  setPageRefCounts,
+  setPageRefs,
   setPinnedByFolder,
   setTagCounts,
   setWidth,
@@ -37,6 +41,22 @@ export const loadTagCounts = async (): Promise<void> => {
   } catch {
     setTagCounts(new Map<string, number>())
   }
+}
+
+export const loadPageRefCounts = async (): Promise<void> => {
+  const counts = new Map<string, number>()
+  for (const eachFolder of getState().folders) {
+    if (eachFolder.kind !== 'page-refs') {
+      continue
+    }
+    try {
+      const nodes = await resolveFolder(eachFolder)
+      counts.set(eachFolder.id, nodes.length)
+    } catch {
+      counts.set(eachFolder.id, 0)
+    }
+  }
+  setPageRefCounts(counts)
 }
 
 const isUserDefinedTag = (ident: string | null): boolean => {
@@ -67,6 +87,30 @@ const buildTagFolders = (tags: TagInfo[]): FolderDef[] => {
     if (isUserDefinedTag(eachTag.ident)) {
       folders.push(tagToFolder(eachTag))
     }
+  })
+  return folders
+}
+
+const pageRefToFolder = (pageRef: PageRefDef): FolderDef => {
+  return {
+    id: PAGE_REFS_FOLDER_PREFIX + pageRef.uuid,
+    name: pageRef.title,
+    kind: 'page-refs',
+    pageName: pageRef.pageName,
+    source: 'config',
+    policy: {
+      nodes: DEFAULT_NODE_POLICY.nodes,
+      includeDescendantTags: DEFAULT_NODE_POLICY.includeDescendantTags,
+      // Linked references mostly live in journal blocks, so journals stay in.
+      includeJournal: true,
+    },
+  }
+}
+
+const buildFolders = (tags: TagInfo[], pageRefs: PageRefDef[]): FolderDef[] => {
+  const folders = buildTagFolders(tags)
+  pageRefs.forEach((eachPageRef) => {
+    folders.push(pageRefToFolder(eachPageRef))
   })
   return folders
 }
@@ -114,11 +158,13 @@ export const loadConfig = async (): Promise<void> => {
   try {
     const config = await readConfig()
     setBookmarks(config.bookmarks)
+    setPageRefs(config.pageRefs)
     setPinnedByFolder(config.pinnedByFolder)
     setWidth(config.width)
     setFolderWidth(config.folderWidth)
   } catch {
     setBookmarks([])
+    setPageRefs([])
     setPinnedByFolder(new Map<string, string[]>())
   }
 }
@@ -127,6 +173,7 @@ const persistConfig = async (): Promise<void> => {
   const state = getState()
   await writeConfig({
     bookmarks: state.bookmarks,
+    pageRefs: state.pageRefs,
     pinnedByFolder: state.pinnedByFolder,
     width: state.width,
     folderWidth: state.folderWidth,
@@ -164,16 +211,17 @@ export const resizeFolderWidth = async (width: number): Promise<void> => {
 }
 
 export const loadFolders = async (): Promise<void> => {
+  await loadConfig()
   let tags: TagInfo[] = []
   try {
     tags = await enumerateTags()
   } catch {
     tags = []
   }
-  const folders = buildTagFolders(tags)
+  const folders = buildFolders(tags, getState().pageRefs)
   setFolders(folders)
   void loadTagCounts()
-  await loadConfig()
+  void loadPageRefCounts()
   const state = getState()
   if (state.selectedFolderId === null && folders.length > 0) {
     const firstFolder = folders[0]
@@ -225,6 +273,58 @@ export const bookmarkPage = async (pageName: string): Promise<void> => {
     title = page.name
   }
   await addBookmark({ uuid: page.uuid, title: title, isPage: true })
+}
+
+export const addPageRef = async (pageName: string): Promise<void> => {
+  const page = await getPage(pageName)
+  if (page === null) {
+    return
+  }
+  let title = pageName
+  if (typeof page.title === 'string' && page.title.length > 0) {
+    title = page.title
+  } else if (typeof page.name === 'string' && page.name.length > 0) {
+    title = page.name
+  }
+  let name = pageName
+  if (typeof page.name === 'string' && page.name.length > 0) {
+    name = page.name
+  }
+  const current = getState().pageRefs
+  for (const eachPageRef of current) {
+    if (eachPageRef.uuid === page.uuid) {
+      showMessage('Already in Page References: ' + title, 'warning')
+      return
+    }
+  }
+  const next: PageRefDef[] = []
+  current.forEach((eachPageRef) => {
+    next.push(eachPageRef)
+  })
+  next.push({ uuid: page.uuid, pageName: name, title: title })
+  setPageRefs(next)
+  await persistConfig()
+  await refreshFolders()
+  void loadPageRefCounts()
+  showMessage('Added to Page References: ' + title, 'success')
+}
+
+export const removePageRefFolder = async (folderId: string): Promise<void> => {
+  if (folderId.startsWith(PAGE_REFS_FOLDER_PREFIX) === false) {
+    return
+  }
+  const uuid = folderId.slice(PAGE_REFS_FOLDER_PREFIX.length)
+  const current = getState().pageRefs
+  const next: PageRefDef[] = []
+  current.forEach((eachPageRef) => {
+    if (eachPageRef.uuid !== uuid) {
+      next.push(eachPageRef)
+    }
+  })
+  setPageRefs(next)
+  await persistConfig()
+  await refreshFolders()
+  void loadPageRefCounts()
 }
 
 export const removeBookmark = async (uuid: string): Promise<void> => {
@@ -292,7 +392,7 @@ export const refreshFolders = async (): Promise<void> => {
   } catch {
     tags = []
   }
-  const folders = buildTagFolders(tags)
+  const folders = buildFolders(tags, getState().pageRefs)
   const state = getState()
   if (foldersSignature(state.folders) === foldersSignature(folders)) {
     return
@@ -321,6 +421,7 @@ export const refreshAfterDbChange = async (
 ): Promise<void> => {
   await refreshFolders()
   void loadTagCounts()
+  void loadPageRefCounts()
   await refreshActiveFolder(changedUuids)
 }
 

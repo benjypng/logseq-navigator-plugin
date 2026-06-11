@@ -55,17 +55,28 @@ export const getLinkedReferenceBlocks = async (
   pageNameOrUuid: string,
 ): Promise<BlockEntity[]> => {
   const grouped = await logseq.Editor.getPageLinkedReferences(pageNameOrUuid)
-  if (grouped === null) {
+  if (grouped === null || typeof grouped !== 'object') {
     return []
   }
   const blocks: BlockEntity[] = []
-  grouped.forEach((eachTuple) => {
-    const tupleBlocks = eachTuple[1]
-    if (Array.isArray(tupleBlocks)) {
-      tupleBlocks.forEach((eachBlock) => {
-        blocks.push(eachBlock)
-      })
+  const pushBlocks = (value: unknown): void => {
+    if (Array.isArray(value) === false) {
+      return
     }
+    ;(value as BlockEntity[]).forEach((eachBlock) => {
+      blocks.push(eachBlock)
+    })
+  }
+  if (Array.isArray(grouped)) {
+    grouped.forEach((eachTuple) => {
+      pushBlocks(eachTuple[1])
+    })
+    return blocks
+  }
+  // DB graphs return a record keyed by a stringified page entity
+  // ('{"id" 20706}') instead of the typed [page, blocks][] tuples.
+  Object.values(grouped as Record<string, unknown>).forEach((eachValue) => {
+    pushBlocks(eachValue)
   })
   return blocks
 }
@@ -73,17 +84,31 @@ export const getLinkedReferenceBlocks = async (
 export const registerBlockBookmarkMenu = (
   handler: (uuid: string) => void,
 ): void => {
-  logseq.Editor.registerBlockContextMenuItem('Bookmark', async (event) => {
-    handler(event.uuid)
-  })
+  logseq.Editor.registerBlockContextMenuItem(
+    'Navigator: Add as Bookmark',
+    async (event) => {
+      handler(event.uuid)
+    },
+  )
 }
 
 export const registerPageBookmarkMenu = (
   handler: (pageName: string) => void,
 ): void => {
-  logseq.App.registerPageMenuItem('Bookmark', (event) => {
+  logseq.App.registerPageMenuItem('Navigator: Add as Bookmark', (event) => {
     handler(event.page)
   })
+}
+
+export const registerPageRefsMenu = (
+  handler: (pageName: string) => void,
+): void => {
+  logseq.App.registerPageMenuItem(
+    'Navigator: Add as Page Reference',
+    (event) => {
+      handler(event.page)
+    },
+  )
 }
 
 export const getPageBlocksTree = async (

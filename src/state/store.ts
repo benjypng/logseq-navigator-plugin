@@ -10,6 +10,7 @@ import type {
   Bookmark,
   FolderDef,
   FolderResult,
+  PageRefDef,
   Preview,
   Sort,
 } from '../types'
@@ -20,7 +21,9 @@ const createInitialState = (): AppState => {
   return {
     folders: [],
     bookmarks: [],
+    pageRefs: [],
     tagCounts: new Map<string, number>(),
+    pageRefCounts: new Map<string, number>(),
     pinnedByFolder: new Map<string, string[]>(),
     selectedFolderId: null,
     selectedNodeUuid: null,
@@ -66,11 +69,17 @@ export const setTagCounts = (tagCounts: Map<string, number>): void => {
   commitPatch({ tagCounts: tagCounts })
 }
 
+export const setPageRefCounts = (pageRefCounts: Map<string, number>): void => {
+  commitPatch({ pageRefCounts: pageRefCounts })
+}
+
 export const resetGraphState = (): void => {
   commitPatch({
     folders: [],
     bookmarks: [],
+    pageRefs: [],
     tagCounts: new Map<string, number>(),
+    pageRefCounts: new Map<string, number>(),
     pinnedByFolder: new Map<string, string[]>(),
     selectedFolderId: null,
     selectedNodeUuid: null,
@@ -81,6 +90,10 @@ export const resetGraphState = (): void => {
 
 export const setBookmarks = (bookmarks: Bookmark[]): void => {
   commitPatch({ bookmarks: bookmarks })
+}
+
+export const setPageRefs = (pageRefs: PageRefDef[]): void => {
+  commitPatch({ pageRefs: pageRefs })
 }
 
 export const setPinnedByFolder = (

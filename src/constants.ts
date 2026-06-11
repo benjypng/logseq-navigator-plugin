@@ -28,6 +28,8 @@ export const MAX_FOLDER_WIDTH = 480
 
 export const DEFAULT_CONFIG_PAGE_NAME = 'Navigator/Config'
 
+export const PAGE_REFS_FOLDER_PREFIX = 'page-refs:'
+
 export const DEFAULT_DEBOUNCE_MS = 400
 
 export const SORT_UPDATED: Sort = 'updated'

@@ -73,8 +73,15 @@ export interface Bookmark {
   isPage: boolean
 }
 
+export interface PageRefDef {
+  uuid: string
+  pageName: string
+  title: string
+}
+
 export interface NavigatorConfig {
   bookmarks: Bookmark[]
+  pageRefs: PageRefDef[]
   pinnedByFolder: Map<string, string[]>
   width: number
   folderWidth: number
@@ -83,7 +90,9 @@ export interface NavigatorConfig {
 export interface AppState {
   folders: FolderDef[]
   bookmarks: Bookmark[]
+  pageRefs: PageRefDef[]
   tagCounts: Map<string, number>
+  pageRefCounts: Map<string, number>
 
   pinnedByFolder: Map<string, string[]>
   selectedFolderId: string | null
