@@ -238,3 +238,15 @@ export const getNumberSetting = (key: string): number | null => {
   }
   return null
 }
+
+export const getBooleanSetting = (key: string): boolean | null => {
+  const settingsObject = logseq.settings
+  if (settingsObject === undefined) {
+    return null
+  }
+  const value = settingsObject[key]
+  if (typeof value === 'boolean') {
+    return value
+  }
+  return null
+}

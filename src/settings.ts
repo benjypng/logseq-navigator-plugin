@@ -4,6 +4,13 @@ import { DEFAULT_CONFIG_PAGE_NAME, DEFAULT_DEBOUNCE_MS } from './constants'
 
 export const settings: SettingSchemaDesc[] = [
   {
+    key: 'openByDefault',
+    type: 'boolean',
+    default: true,
+    title: 'Open by default',
+    description: 'Open the navigator automatically when Logseq starts.',
+  },
+  {
     key: 'configPageName',
     type: 'string',
     default: DEFAULT_CONFIG_PAGE_NAME,
