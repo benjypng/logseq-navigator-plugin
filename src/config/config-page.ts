@@ -18,6 +18,7 @@ import {
   getPageBlocksTree,
   getPagesFromNamespace,
   getStringSetting,
+  tagBlockAsCode,
   updateBlock,
 } from '../logseq/api'
 import type { Bookmark, NavigatorConfig, PageRefDef } from '../types'
@@ -78,9 +79,10 @@ const validateFolderWidth = (value: unknown): number => {
   return clampFolderWidth(Math.round(value))
 }
 
-const buildFencedJson = (config: NavigatorConfig): string => {
-  const json = JSON.stringify(serializeConfig(config), null, 2)
-  return CONFIG_FENCE_OPEN + '\n' + json + '\n' + CONFIG_FENCE_CLOSE
+// The config block is a DB-graph code block (#Code tag), so the title holds
+// raw JSON; markdown fences would show up literally inside the code block.
+const buildConfigJson = (config: NavigatorConfig): string => {
+  return JSON.stringify(serializeConfig(config), null, 2)
 }
 
 const resolveConfigPage = async (name: string): Promise<PageEntity | null> => {
@@ -307,6 +309,17 @@ export const readConfig = async (): Promise<NavigatorConfig> => {
   return parseConfig(extractJsonText(block.title))
 }
 
+// Tagging with #Code converts the block to a code block; Logseq fills in
+// display-type and auto-detects the language. Never fail a config write
+// over presentation.
+const ensureCodeBlock = async (uuid: string): Promise<void> => {
+  try {
+    await tagBlockAsCode(uuid)
+  } catch {
+    return
+  }
+}
+
 export const writeConfig = async (config: NavigatorConfig): Promise<void> => {
   const pageName = getConfigPageName()
   let page = await resolveConfigPage(pageName)
@@ -317,11 +330,21 @@ export const writeConfig = async (config: NavigatorConfig): Promise<void> => {
   if (page === null) {
     return
   }
-  const content = buildFencedJson(config)
+  const content = buildConfigJson(config)
   const block = await findConfigBlock(page.uuid)
   if (block === null) {
-    await appendBlockInPage(page.uuid, content)
+    const created = await appendBlockInPage(page.uuid, content)
+    if (created !== null) {
+      await ensureCodeBlock(created.uuid)
+    }
     return
   }
+  // Legacy blocks still carry fences in the title; tag them once so they
+  // keep rendering as code after the fences are dropped.
+  const hadFences =
+    typeof block.title === 'string' && block.title.includes(CONFIG_FENCE_OPEN)
   await updateBlock(block.uuid, content)
+  if (hadFences) {
+    await ensureCodeBlock(block.uuid)
+  }
 }

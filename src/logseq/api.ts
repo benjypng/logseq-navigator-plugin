@@ -152,6 +152,14 @@ export const updateBlock = async (
   await logseq.Editor.updateBlock(uuid, content)
 }
 
+export const tagBlockAsCode = async (uuid: string): Promise<void> => {
+  const tag = await logseq.Editor.getPage('Code')
+  if (tag === null) {
+    return
+  }
+  await logseq.Editor.addBlockTag(uuid, tag.uuid)
+}
+
 export const navigateToNode = (uuid: string): void => {
   logseq.App.pushState('page', { name: uuid })
 }
