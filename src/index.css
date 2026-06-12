@@ -42,6 +42,7 @@ body {
   );
   color: var(--ls-primary-text-color, #1f2329);
   background: var(--ls-primary-background-color, #ffffff);
+  border-right: 1px solid var(--ls-border-color, #e5e7eb);
   overflow: hidden;
 }
 
