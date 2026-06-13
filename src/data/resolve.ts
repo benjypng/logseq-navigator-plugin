@@ -1,7 +1,7 @@
 import type { BlockEntity } from '@logseq/libs/dist/LSPlugin.user'
 
 import {
-  getLinkedReferenceBlocks,
+  getLinkedReferencePages,
   getTagObjects,
   runDatascriptQuery,
 } from '../logseq/api'
@@ -69,6 +69,10 @@ const objectsToIdentities = (
       title = record.fullTitle
     } else if (typeof eachObject.title === 'string') {
       title = eachObject.title
+    } else if (typeof record.originalName === 'string') {
+      title = record.originalName
+    } else if (typeof record.name === 'string') {
+      title = record.name
     }
     const createdAt =
       typeof eachObject.createdAt === 'number' ? eachObject.createdAt : null
@@ -163,8 +167,8 @@ const resolvePageRefsFolder = async (
   pageName: string,
   policy: NodePolicy,
 ): Promise<NodeIdentity[]> => {
-  const blocks = await getLinkedReferenceBlocks(pageName)
-  return objectsToIdentities(blocks, policy)
+  const pages = await getLinkedReferencePages(pageName)
+  return objectsToIdentities(pages as unknown as BlockEntity[], policy)
 }
 
 export const resolveFolder = async (

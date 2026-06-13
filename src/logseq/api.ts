@@ -17,7 +17,7 @@ export const getCurrentEntity = async (): Promise<
 }
 
 export const getPage = async (
-  nameOrUuid: string,
+  nameOrUuid: string | number,
 ): Promise<PageEntity | null> => {
   const page = await logseq.Editor.getPage(nameOrUuid)
   return page
@@ -79,6 +79,30 @@ export const getLinkedReferenceBlocks = async (
     pushBlocks(eachValue)
   })
   return blocks
+}
+
+export const getLinkedReferencePages = async (
+  pageNameOrUuid: string,
+): Promise<PageEntity[]> => {
+  const blocks = await getLinkedReferenceBlocks(pageNameOrUuid)
+  const pages: PageEntity[] = []
+  const seen = new Set<number>()
+  for (const eachBlock of blocks) {
+    const pageRef = eachBlock.page as unknown
+    if (typeof pageRef !== 'object' || pageRef === null) {
+      continue
+    }
+    const pageId = (pageRef as Record<string, unknown>).id
+    if (typeof pageId !== 'number' || seen.has(pageId)) {
+      continue
+    }
+    seen.add(pageId)
+    const page = await getPage(pageId)
+    if (page !== null) {
+      pages.push(page)
+    }
+  }
+  return pages
 }
 
 export const registerBlockBookmarkMenu = (
