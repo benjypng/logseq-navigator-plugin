@@ -188,6 +188,10 @@ export const navigateToNode = (uuid: string): void => {
   logseq.App.pushState('page', { name: uuid })
 }
 
+export const openInRightSidebar = (uuid: string): void => {
+  logseq.Editor.openInRightSidebar(uuid)
+}
+
 export const onRouteChanged = (callback: () => void): (() => void) => {
   const off = logseq.App.onRouteChanged(() => {
     callback()

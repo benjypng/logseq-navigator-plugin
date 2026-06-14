@@ -75,6 +75,7 @@ Tags are listed automatically — there is nothing to configure. Each row shows 
 - **Filter** with the search box to narrow the list by title.
 - **Pin** a node with its pin button to keep it in a `Pinned` group at the top of that folder.
 - **Click** a node to navigate to it in the main window.
+- **Shift+Click** a node (or **Shift+Enter** when it's focused) to open it in Logseq's right sidebar instead, keeping the main window where it is.
 
 ### The config page
 

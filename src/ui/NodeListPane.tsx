@@ -14,7 +14,7 @@ import {
   VIRTUAL_ROW_HEIGHT,
 } from '../constants'
 import { hydrateWindow } from '../data/hydrate'
-import { navigateToNode } from '../logseq/api'
+import { navigateToNode, openInRightSidebar } from '../logseq/api'
 import { togglePin } from '../state/actions'
 import {
   mergePreviews,
@@ -279,9 +279,13 @@ export const NodeListPane = (): ReactElement => {
     }
   }, [visibleKey, state.selectedFolderId, activeResult])
 
-  const handleSelectNode = (uuid: string): void => {
-    navigateToNode(uuid)
+  const handleSelectNode = (uuid: string, openInSidebar: boolean): void => {
     selectNode(uuid)
+    if (openInSidebar) {
+      openInRightSidebar(uuid)
+      return
+    }
+    navigateToNode(uuid)
   }
 
   const handleTogglePin = (uuid: string): void => {

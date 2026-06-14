@@ -7,7 +7,7 @@ interface NodeRowProps {
   preview: Preview | undefined
   isSelected: boolean
   isPinned: boolean
-  onSelect: (uuid: string) => void
+  onSelect: (uuid: string, openInSidebar: boolean) => void
   onTogglePin: (uuid: string) => void
 }
 
@@ -82,13 +82,13 @@ const formatDate = (ms: number | null): string => {
 }
 
 export const NodeRow = (props: NodeRowProps): ReactElement => {
-  const handleClick = (): void => {
-    props.onSelect(props.node.uuid)
+  const handleClick = (event: MouseEvent<HTMLDivElement>): void => {
+    props.onSelect(props.node.uuid, event.shiftKey)
   }
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault()
-      props.onSelect(props.node.uuid)
+      props.onSelect(props.node.uuid, event.shiftKey)
     }
   }
   const handleTogglePin = (event: MouseEvent<HTMLButtonElement>): void => {
