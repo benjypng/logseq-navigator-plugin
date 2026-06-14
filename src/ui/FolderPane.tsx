@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react'
+import { type ReactElement, type ReactNode, useState } from 'react'
 
 import { navigateToNode } from '../logseq/api'
 import {
@@ -8,25 +8,63 @@ import {
 } from '../state/actions'
 import { useAppState } from '../state/store'
 import type { Bookmark, FolderDef } from '../types'
+import { getCategoryColorVar, getTagCategory } from './tag-category'
 
-const kindGlyph = (kind: FolderDef['kind']): string => {
-  if (kind === 'tag') {
-    return '#'
-  }
-  if (kind === 'page-refs') {
-    return '↳'
-  }
-  return '?'
+const ChevronIcon = (): ReactElement => {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  )
 }
 
-interface FolderRowProps {
+interface SectionProps {
+  label: string
+  count: number
+  open: boolean
+  onToggle: () => void
+  children: ReactNode
+}
+
+const Section = (props: SectionProps): ReactElement => {
+  return (
+    <div className="navigator-folder-section">
+      <button
+        type="button"
+        className="navigator-section-toggle"
+        aria-expanded={props.open}
+        onClick={props.onToggle}
+      >
+        <span className="navigator-section-chevron">
+          <ChevronIcon />
+        </span>
+        <span className="navigator-pane-header">{props.label}</span>
+        <span className="navigator-pane-header-count">{props.count}</span>
+      </button>
+      {props.open ? props.children : null}
+    </div>
+  )
+}
+
+interface TagRowProps {
   folder: FolderDef
   isSelected: boolean
   count: number | undefined
+  colorVar: string
   onSelect: (folderId: string) => void
 }
 
-const FolderRow = (props: FolderRowProps): ReactElement => {
+const TagRow = (props: TagRowProps): ReactElement => {
   const handleClick = (): void => {
     props.onSelect(props.folder.id)
   }
@@ -36,11 +74,12 @@ const FolderRow = (props: FolderRowProps): ReactElement => {
   return (
     <li className="navigator-folder-item">
       <button type="button" className={className} onClick={handleClick}>
-        <span className="navigator-folder-kind">
-          {kindGlyph(props.folder.kind)}
-        </span>
+        <span
+          className="navigator-folder-dot"
+          style={{ background: props.colorVar }}
+        />
         <span className="navigator-folder-name">{props.folder.name}</span>
-        {props.count === undefined ? null : (
+        {props.count === undefined || props.count === 0 ? null : (
           <span className="navigator-folder-count">{props.count}</span>
         )}
       </button>
@@ -69,7 +108,7 @@ const BookmarkRow = (props: BookmarkRowProps): ReactElement => {
         className="navigator-folder-row"
         onClick={handleOpen}
       >
-        <span className="navigator-folder-kind">{glyph}</span>
+        <span className="navigator-folder-glyph">{glyph}</span>
         <span className="navigator-folder-name">{props.bookmark.title}</span>
       </button>
       <button
@@ -89,6 +128,7 @@ interface PageRefRowProps {
   folder: FolderDef
   isSelected: boolean
   count: number | undefined
+  colorVar: string
   onSelect: (folderId: string) => void
   onRemove: (folderId: string) => void
 }
@@ -106,9 +146,10 @@ const PageRefRow = (props: PageRefRowProps): ReactElement => {
   return (
     <li className="navigator-folder-item navigator-pageref-item">
       <button type="button" className={className} onClick={handleClick}>
-        <span className="navigator-folder-kind">
-          {kindGlyph(props.folder.kind)}
-        </span>
+        <span
+          className="navigator-folder-dot"
+          style={{ background: props.colorVar }}
+        />
         <span className="navigator-folder-name">{props.folder.name}</span>
         {props.count === undefined ? null : (
           <span className="navigator-folder-count">{props.count}</span>
@@ -129,24 +170,24 @@ const PageRefRow = (props: PageRefRowProps): ReactElement => {
 
 const partitionFolders = (
   folders: FolderDef[],
-): { tags: FolderDef[]; pageRefs: FolderDef[]; queries: FolderDef[] } => {
+): { tags: FolderDef[]; pageRefs: FolderDef[] } => {
   const tags: FolderDef[] = []
   const pageRefs: FolderDef[] = []
-  const queries: FolderDef[] = []
   folders.forEach((eachFolder) => {
     if (eachFolder.kind === 'tag') {
       tags.push(eachFolder)
     } else if (eachFolder.kind === 'page-refs') {
       pageRefs.push(eachFolder)
-    } else {
-      queries.push(eachFolder)
     }
   })
-  return { tags: tags, pageRefs: pageRefs, queries: queries }
+  return { tags: tags, pageRefs: pageRefs }
 }
 
 export const FolderPane = (): ReactElement => {
   const state = useAppState()
+  const [bookmarksOpen, setBookmarksOpen] = useState(true)
+  const [tagsOpen, setTagsOpen] = useState(true)
+  const [refsOpen, setRefsOpen] = useState(true)
 
   const handleSelect = (folderId: string): void => {
     void selectAndResolveFolder(folderId)
@@ -168,96 +209,105 @@ export const FolderPane = (): ReactElement => {
       className="navigator-folder-pane"
       style={{ width: String(state.folderWidth) + 'px' }}
     >
-      <div className="navigator-folder-section">
-        <div className="navigator-section-header">
-          <span className="navigator-pane-header">Bookmarks</span>
-          {state.bookmarks.length > 0 ? (
-            <span className="navigator-pane-header-count">
-              {state.bookmarks.length}
-            </span>
-          ) : null}
-        </div>
-        {state.bookmarks.length === 0 ? (
-          <div className="navigator-empty">
-            Right-click a page or block → Navigator: Add as Bookmark.
-          </div>
-        ) : (
-          <ul className="navigator-folder-list">
-            {state.bookmarks.map((eachBookmark) => {
-              return (
-                <BookmarkRow
-                  key={eachBookmark.uuid}
-                  bookmark={eachBookmark}
-                  onOpen={handleOpenBookmark}
-                  onRemove={handleRemoveBookmark}
-                />
-              )
-            })}
-          </ul>
-        )}
+      <div className="navigator-rail-scroll">
+        <Section
+          label="Bookmarks"
+          count={state.bookmarks.length}
+          open={bookmarksOpen}
+          onToggle={() => {
+            setBookmarksOpen((previous) => !previous)
+          }}
+        >
+          {state.bookmarks.length === 0 ? (
+            <div className="navigator-empty">
+              Right-click a page or block → Navigator: Add as Bookmark.
+            </div>
+          ) : (
+            <ul className="navigator-folder-list">
+              {state.bookmarks.map((eachBookmark) => {
+                return (
+                  <BookmarkRow
+                    key={eachBookmark.uuid}
+                    bookmark={eachBookmark}
+                    onOpen={handleOpenBookmark}
+                    onRemove={handleRemoveBookmark}
+                  />
+                )
+              })}
+            </ul>
+          )}
+        </Section>
+
+        <Section
+          label="Tags"
+          count={partitioned.tags.length}
+          open={tagsOpen}
+          onToggle={() => {
+            setTagsOpen((previous) => !previous)
+          }}
+        >
+          {partitioned.tags.length === 0 ? (
+            <div className="navigator-empty">No tags found.</div>
+          ) : (
+            <ul className="navigator-folder-list">
+              {partitioned.tags.map((eachFolder) => {
+                const category = getTagCategory(eachFolder.name)
+                return (
+                  <TagRow
+                    key={eachFolder.id}
+                    folder={eachFolder}
+                    isSelected={eachFolder.id === state.selectedFolderId}
+                    count={
+                      eachFolder.kind === 'tag'
+                        ? state.tagCounts.get(eachFolder.tagUuid)
+                        : undefined
+                    }
+                    colorVar={getCategoryColorVar(category)}
+                    onSelect={handleSelect}
+                  />
+                )
+              })}
+            </ul>
+          )}
+        </Section>
+
+        <Section
+          label="Page references"
+          count={partitioned.pageRefs.length}
+          open={refsOpen}
+          onToggle={() => {
+            setRefsOpen((previous) => !previous)
+          }}
+        >
+          {partitioned.pageRefs.length === 0 ? (
+            <div className="navigator-empty">
+              Right-click a page → Navigator: Add as Page Reference.
+            </div>
+          ) : (
+            <ul className="navigator-folder-list">
+              {partitioned.pageRefs.map((eachFolder) => {
+                const category = getTagCategory(eachFolder.name)
+                return (
+                  <PageRefRow
+                    key={eachFolder.id}
+                    folder={eachFolder}
+                    isSelected={eachFolder.id === state.selectedFolderId}
+                    count={state.pageRefCounts.get(eachFolder.id)}
+                    colorVar={getCategoryColorVar(category)}
+                    onSelect={handleSelect}
+                    onRemove={handleRemovePageRef}
+                  />
+                )
+              })}
+            </ul>
+          )}
+        </Section>
       </div>
 
-      <div className="navigator-folder-section">
-        <div className="navigator-section-header">
-          <span className="navigator-pane-header">Tags</span>
-          {partitioned.tags.length > 0 ? (
-            <span className="navigator-pane-header-count">
-              {partitioned.tags.length}
-            </span>
-          ) : null}
-        </div>
-        {partitioned.tags.length === 0 ? (
-          <div className="navigator-empty">No tags found.</div>
-        ) : (
-          <ul className="navigator-folder-list">
-            {partitioned.tags.map((eachFolder) => {
-              return (
-                <FolderRow
-                  key={eachFolder.id}
-                  folder={eachFolder}
-                  isSelected={eachFolder.id === state.selectedFolderId}
-                  count={
-                    eachFolder.kind === 'tag'
-                      ? state.tagCounts.get(eachFolder.tagUuid)
-                      : undefined
-                  }
-                  onSelect={handleSelect}
-                />
-              )
-            })}
-          </ul>
-        )}
-      </div>
-
-      <div className="navigator-folder-section">
-        <div className="navigator-section-header">
-          <span className="navigator-pane-header">Page References</span>
-          {partitioned.pageRefs.length > 0 ? (
-            <span className="navigator-pane-header-count">
-              {partitioned.pageRefs.length}
-            </span>
-          ) : null}
-        </div>
-        {partitioned.pageRefs.length === 0 ? (
-          <div className="navigator-empty">
-            Right-click a page → Navigator: Add as Page Reference.
-          </div>
-        ) : (
-          <ul className="navigator-folder-list">
-            {partitioned.pageRefs.map((eachFolder) => {
-              return (
-                <PageRefRow
-                  key={eachFolder.id}
-                  folder={eachFolder}
-                  isSelected={eachFolder.id === state.selectedFolderId}
-                  count={state.pageRefCounts.get(eachFolder.id)}
-                  onSelect={handleSelect}
-                  onRemove={handleRemovePageRef}
-                />
-              )
-            })}
-          </ul>
-        )}
+      <div className="navigator-rail-footer">
+        <span className="navigator-rail-footer-text">
+          {partitioned.tags.length} tags · {partitioned.pageRefs.length} refs
+        </span>
       </div>
     </div>
   )

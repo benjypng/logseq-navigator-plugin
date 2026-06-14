@@ -22,7 +22,7 @@ export const DEFAULT_PANE_WIDTH = 640
 export const MIN_PANE_WIDTH = 320
 export const MAX_PANE_WIDTH = 1200
 
-export const DEFAULT_FOLDER_WIDTH = 224
+export const DEFAULT_FOLDER_WIDTH = 236
 export const MIN_FOLDER_WIDTH = 160
 export const MAX_FOLDER_WIDTH = 480
 
@@ -43,8 +43,8 @@ export const DEFAULT_NODE_POLICY: NodePolicy = {
   includeJournal: false,
 }
 
-export const VIRTUAL_ROW_HEIGHT = 104
-export const VIRTUAL_HEADER_HEIGHT = 28
+export const VIRTUAL_ROW_HEIGHT = 92
+export const VIRTUAL_HEADER_HEIGHT = 40
 export const VIRTUAL_OVERSCAN = 8
 
 export const ONE_DAY_MS = 86400000

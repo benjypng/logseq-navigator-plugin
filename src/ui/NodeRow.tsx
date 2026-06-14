@@ -1,4 +1,4 @@
-import type { MouseEvent, ReactElement } from 'react'
+import type { KeyboardEvent, MouseEvent, ReactElement } from 'react'
 
 import type { NodeIdentity, Preview } from '../types'
 
@@ -11,44 +11,62 @@ interface NodeRowProps {
   onTogglePin: (uuid: string) => void
 }
 
-const PageIcon = (): ReactElement => {
+const FileIcon = (): ReactElement => {
   return (
     <svg
-      width="15"
-      height="15"
+      width="16"
+      height="16"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.8"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-      <path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" />
+      <path d="M6 3h7l5 5v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+      <path d="M13 3v5h5" />
     </svg>
   )
 }
 
-const BlockIcon = (): ReactElement => {
+const BlockBulletIcon = (): ReactElement => {
+  return (
+    <svg
+      width="17"
+      height="17"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="9"
+        stroke="currentColor"
+        strokeOpacity="0.42"
+        strokeWidth="1.6"
+      />
+      <circle cx="12" cy="12" r="3.4" fill="currentColor" />
+    </svg>
+  )
+}
+
+const PinIcon = (props: { filled: boolean }): ReactElement => {
   return (
     <svg
       width="15"
       height="15"
       viewBox="0 0 24 24"
-      fill="none"
+      fill={props.filled ? 'currentColor' : 'none'}
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.7"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M9 6h11" />
-      <path d="M9 12h11" />
-      <path d="M9 18h11" />
-      <path d="M5 6v.01" />
-      <path d="M5 12v.01" />
-      <path d="M5 18v.01" />
+      <path d="M12 17v5" />
+      <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
     </svg>
   )
 }
@@ -60,32 +78,18 @@ const formatDate = (ms: number | null): string => {
   return new Date(ms).toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric',
-    year: 'numeric',
   })
-}
-
-const PinIcon = (props: { filled: boolean }): ReactElement => {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill={props.filled ? 'currentColor' : 'none'}
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 17v5" />
-      <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
-    </svg>
-  )
 }
 
 export const NodeRow = (props: NodeRowProps): ReactElement => {
   const handleClick = (): void => {
     props.onSelect(props.node.uuid)
+  }
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      props.onSelect(props.node.uuid)
+    }
   }
   const handleTogglePin = (event: MouseEvent<HTMLButtonElement>): void => {
     event.stopPropagation()
@@ -98,21 +102,26 @@ export const NodeRow = (props: NodeRowProps): ReactElement => {
   const className = props.isSelected
     ? 'navigator-node-row navigator-node-row-selected'
     : 'navigator-node-row'
-  const kindClassName = props.node.isPage
-    ? 'navigator-node-icon navigator-node-icon-page'
-    : 'navigator-node-icon navigator-node-icon-block'
   const kindTitle = props.node.isPage ? 'Page' : 'Block'
   const pinClassName = props.isPinned
     ? 'navigator-node-pin navigator-node-pin-active'
     : 'navigator-node-pin'
   return (
-    <div className={className} onClick={handleClick}>
-      <span className={kindClassName} title={kindTitle}>
-        {props.node.isPage ? <PageIcon /> : <BlockIcon />}
+    <div
+      className={className}
+      role="button"
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+    >
+      <span className="navigator-node-icon" title={kindTitle}>
+        {props.node.isPage ? <FileIcon /> : <BlockBulletIcon />}
       </span>
       <div className="navigator-node-text">
         <div className="navigator-node-title">{titleText}</div>
-        <div className="navigator-node-preview">{previewText}</div>
+        {previewText.length > 0 ? (
+          <div className="navigator-node-preview">{previewText}</div>
+        ) : null}
         <div className="navigator-node-date">{dateText}</div>
       </div>
       <button

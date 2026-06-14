@@ -9,9 +9,6 @@ import {
 
 import {
   DATE_GROUP_LABEL_PINNED,
-  SORT_CREATED,
-  SORT_TITLE,
-  SORT_UPDATED,
   VIRTUAL_HEADER_HEIGHT,
   VIRTUAL_OVERSCAN,
   VIRTUAL_ROW_HEIGHT,
@@ -23,12 +20,18 @@ import {
   mergePreviews,
   selectNode,
   setFilter,
-  setSort,
   useAppState,
 } from '../state/store'
-import type { DateGroup, FolderResult, NodeIdentity, Sort } from '../types'
+import type {
+  DateGroup,
+  FolderDef,
+  FolderResult,
+  NodeIdentity,
+  Sort,
+} from '../types'
 import { filterNodes, groupNodes, sortNodes } from './grouping'
 import { NodeRow } from './NodeRow'
+import { SortMenu } from './SortMenu'
 
 type FlatRow =
   | { kind: 'header'; label: string }
@@ -68,27 +71,6 @@ const getPinnedUuids = (
   return list
 }
 
-interface SortButtonProps {
-  label: string
-  value: Sort
-  activeSort: Sort
-}
-
-const SortButton = (props: SortButtonProps): ReactElement => {
-  const handleClick = (): void => {
-    setSort(props.value)
-  }
-  const className =
-    props.value === props.activeSort
-      ? 'navigator-sort-button navigator-sort-button-active'
-      : 'navigator-sort-button'
-  return (
-    <button type="button" className={className} onClick={handleClick}>
-      {props.label}
-    </button>
-  )
-}
-
 const SearchIcon = (): ReactElement => {
   return (
     <svg
@@ -97,13 +79,33 @@ const SearchIcon = (): ReactElement => {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="2.1"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
     >
       <circle cx="11" cy="11" r="7" />
-      <path d="m21 21-4.3-4.3" />
+      <path d="m21 21-4.5-4.5" />
+    </svg>
+  )
+}
+
+const HashIcon = (): ReactElement => {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.1"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <line x1="4" y1="9" x2="20" y2="9" />
+      <line x1="4" y1="15" x2="20" y2="15" />
+      <line x1="10" y1="3" x2="8" y2="21" />
+      <line x1="16" y1="3" x2="14" y2="21" />
     </svg>
   )
 }
@@ -112,35 +114,46 @@ interface NodeListHeaderProps {
   sort: Sort
   filter: string
   folderName: string
+  noteCount: number
+  onTitleClick: (() => void) | null
+}
+
+const notesLabel = (count: number): string => {
+  return count === 1 ? '1 note' : String(count) + ' notes'
 }
 
 const NodeListHeader = (props: NodeListHeaderProps): ReactElement => {
   const handleFilterChange = (event: ChangeEvent<HTMLInputElement>): void => {
     setFilter(event.target.value)
   }
+  const onTitleClick = props.onTitleClick
   return (
     <div className="navigator-node-header">
       <div className="navigator-node-header-top">
-        <span className="navigator-node-title-label" title={props.folderName}>
-          {props.folderName}
+        <span className="navigator-title-tile" aria-hidden="true">
+          <HashIcon />
         </span>
-        <div className="navigator-sort-buttons">
-          <SortButton
-            label="Updated"
-            value={SORT_UPDATED}
-            activeSort={props.sort}
-          />
-          <SortButton
-            label="Created"
-            value={SORT_CREATED}
-            activeSort={props.sort}
-          />
-          <SortButton
-            label="Title"
-            value={SORT_TITLE}
-            activeSort={props.sort}
-          />
-        </div>
+        {onTitleClick === null ? (
+          <span className="navigator-node-title-label" title={props.folderName}>
+            {props.folderName}
+          </span>
+        ) : (
+          <button
+            type="button"
+            className="navigator-node-title-label navigator-node-title-link"
+            title={'Go to ' + props.folderName}
+            onClick={onTitleClick}
+          >
+            {props.folderName}
+          </button>
+        )}
+        <span className="navigator-notes-count">
+          {notesLabel(props.noteCount)}
+        </span>
+      </div>
+      <div className="navigator-sort-row">
+        <span className="navigator-sort-by-label">Sort by</span>
+        <SortMenu sort={props.sort} />
       </div>
       <div className="navigator-filter-wrap">
         <span className="navigator-filter-icon">
@@ -286,12 +299,31 @@ export const NodeListPane = (): ReactElement => {
     )
   }
 
-  let folderName = ''
+  let selectedFolder: FolderDef | null = null
   for (const eachFolder of state.folders) {
     if (eachFolder.id === state.selectedFolderId) {
-      folderName = eachFolder.name
+      selectedFolder = eachFolder
     }
   }
+  const folderName = selectedFolder === null ? '' : selectedFolder.name
+
+  let titleTarget: string | null = null
+  if (selectedFolder !== null && selectedFolder.kind === 'tag') {
+    titleTarget = selectedFolder.tagUuid
+  } else if (selectedFolder !== null && selectedFolder.kind === 'page-refs') {
+    titleTarget = selectedFolder.pageName
+  }
+  const handleTitleClick =
+    titleTarget === null
+      ? null
+      : (): void => {
+          navigateToNode(titleTarget)
+        }
+
+  const noteCount =
+    activeResult === undefined
+      ? 0
+      : filterNodes(activeResult.nodes, state.filter).length
 
   return (
     <div className="navigator-node-pane">
@@ -299,6 +331,8 @@ export const NodeListPane = (): ReactElement => {
         sort={state.sort}
         filter={state.filter}
         folderName={folderName}
+        noteCount={noteCount}
+        onTitleClick={handleTitleClick}
       />
       <div className="navigator-node-scroll" ref={scrollRef}>
         <div
@@ -320,18 +354,19 @@ export const NodeListPane = (): ReactElement => {
               top: 0,
               left: 0,
               width: '100%',
-              height: eachItem.size + 'px',
-              overflow: 'hidden' as const,
               transform: 'translateY(' + eachItem.start + 'px)',
             }
             if (row.kind === 'header') {
               return (
                 <div
                   key={'header-' + eachItem.index}
+                  data-index={eachItem.index}
+                  ref={virtualizer.measureElement}
                   className="navigator-date-group"
                   style={style}
                 >
-                  {row.label}
+                  <span className="navigator-date-label">{row.label}</span>
+                  <span className="navigator-date-rule" />
                 </div>
               )
             }
@@ -340,7 +375,12 @@ export const NodeListPane = (): ReactElement => {
                 ? undefined
                 : activeResult.previews.get(row.node.uuid)
             return (
-              <div key={row.node.uuid} style={style}>
+              <div
+                key={row.node.uuid}
+                data-index={eachItem.index}
+                ref={virtualizer.measureElement}
+                style={style}
+              >
                 <NodeRow
                   node={row.node}
                   preview={preview}

@@ -12,7 +12,7 @@ import {
   MIN_FOLDER_WIDTH,
   MIN_PANE_WIDTH,
 } from '../constants'
-import { hideRail, setRailWidth } from '../dock/dock-stub'
+import { setRailWidth } from '../dock/dock-stub'
 import { getThemeMode, invokeSearch, onThemeModeChanged } from '../logseq/api'
 import {
   loadFolders,
@@ -41,25 +41,6 @@ const clampFolderWidth = (value: number): number => {
     return MAX_FOLDER_WIDTH
   }
   return value
-}
-
-const CloseIcon = (): ReactElement => {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M19 12H5" />
-      <path d="m12 19-7-7 7-7" />
-    </svg>
-  )
 }
 
 export const App = (): ReactElement => {
@@ -98,9 +79,6 @@ export const App = (): ReactElement => {
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [])
-  const handleClose = (): void => {
-    hideRail()
-  }
   const handleResizePointerDown = (
     event: ReactPointerEvent<HTMLDivElement>,
   ): void => {
@@ -155,15 +133,6 @@ export const App = (): ReactElement => {
   }
   return (
     <div className="navigator-root" data-theme={colorScheme}>
-      <button
-        type="button"
-        className="navigator-close-button"
-        onClick={handleClose}
-        title="Close navigator"
-        aria-label="Close navigator"
-      >
-        <CloseIcon />
-      </button>
       <FolderPane />
       <div
         className="navigator-folder-resize-handle"
