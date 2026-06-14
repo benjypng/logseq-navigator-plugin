@@ -1,5 +1,6 @@
 import { type ReactElement, type ReactNode, useState } from 'react'
 
+import { hideRail } from '../dock/dock-stub'
 import { navigateToNode } from '../logseq/api'
 import {
   removeBookmark,
@@ -24,6 +25,25 @@ const ChevronIcon = (): ReactElement => {
       aria-hidden="true"
     >
       <polyline points="6 9 12 15 18 9" />
+    </svg>
+  )
+}
+
+const ArrowRightIcon = (): ReactElement => {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M5 12h14" />
+      <path d="m12 5 7 7-7 7" />
     </svg>
   )
 }
@@ -201,6 +221,9 @@ export const FolderPane = (): ReactElement => {
   const handleRemovePageRef = (folderId: string): void => {
     void removePageRefFolder(folderId)
   }
+  const handleClose = (): void => {
+    hideRail()
+  }
 
   const partitioned = partitionFolders(state.folders)
 
@@ -209,6 +232,17 @@ export const FolderPane = (): ReactElement => {
       className="navigator-folder-pane"
       style={{ width: String(state.folderWidth) + 'px' }}
     >
+      <div className="navigator-railbar">
+        <button
+          type="button"
+          className="navigator-close"
+          title="Close navigator"
+          aria-label="Close navigator"
+          onClick={handleClose}
+        >
+          <ArrowRightIcon />
+        </button>
+      </div>
       <div className="navigator-rail-scroll">
         <Section
           label="Bookmarks"
