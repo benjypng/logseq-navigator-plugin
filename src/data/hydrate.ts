@@ -1,8 +1,7 @@
-import type { BlockEntity } from '@logseq/libs/dist/LSPlugin.user'
-
-import { PREVIEW_CHILD_COUNT, PREVIEW_MAX_LENGTH } from '../constants'
-import { getBlockWithChildren, getPageBlocksTree } from '../logseq/api'
+import { PREVIEW_MAX_LENGTH } from '../constants'
+import { runDatascriptQuery } from '../logseq/api'
 import type { NodeIdentity, Preview } from '../types'
+import { isValidUuid } from './queries'
 
 const truncate = (text: string): string => {
   if (text.length <= PREVIEW_MAX_LENGTH) {
@@ -11,54 +10,53 @@ const truncate = (text: string): string => {
   return text.slice(0, PREVIEW_MAX_LENGTH) + '…'
 }
 
-const joinBlockTitles = (blocks: BlockEntity[], count: number): string => {
-  const titles: string[] = []
-  for (const eachBlock of blocks) {
-    if (titles.length >= count) {
-      break
-    }
-    const title = eachBlock.title
-    if (typeof title === 'string' && title.trim().length > 0) {
-      titles.push(title.trim())
-    }
-  }
-  return titles.join(' · ')
-}
-
-const keepFullBlocks = (children: BlockEntity['children']): BlockEntity[] => {
-  if (children === undefined) {
-    return []
-  }
-  const result: BlockEntity[] = []
-  children.forEach((eachChild) => {
-    if (Array.isArray(eachChild) === false) {
-      result.push(eachChild as BlockEntity)
-    }
-  })
-  return result
+const firstBlockQuery = (pageUuid: string): string => {
+  return `[:find ?title ?order
+ :where
+ [?page :block/uuid #uuid "${pageUuid}"]
+ [?b :block/parent ?page]
+ [?b :block/title ?title]
+ [?b :block/order ?order]]`
 }
 
 const hydratePage = async (node: NodeIdentity): Promise<Preview> => {
-  const blocks = await getPageBlocksTree(node.uuid)
-  const text = joinBlockTitles(blocks, PREVIEW_CHILD_COUNT)
-  return { uuid: node.uuid, text: truncate(text) }
-}
-
-const hydrateBlock = async (node: NodeIdentity): Promise<Preview> => {
-  const block = await getBlockWithChildren(node.uuid)
-  if (block === null) {
+  if (isValidUuid(node.uuid) === false) {
     return { uuid: node.uuid, text: '' }
   }
-  const children = keepFullBlocks(block.children)
-  const text = joinBlockTitles(children, PREVIEW_CHILD_COUNT)
-  return { uuid: node.uuid, text: truncate(text) }
+  let rows: unknown[] = []
+  try {
+    rows = await runDatascriptQuery<unknown[]>(firstBlockQuery(node.uuid))
+  } catch {
+    return { uuid: node.uuid, text: '' }
+  }
+  let firstTitle = ''
+  let lowestOrder: string | null = null
+  rows.forEach((eachRow) => {
+    if (Array.isArray(eachRow) === false) {
+      return
+    }
+    const title = eachRow[0]
+    const order = eachRow[1]
+    if (typeof title !== 'string' || typeof order !== 'string') {
+      return
+    }
+    if (lowestOrder === null || order < lowestOrder) {
+      lowestOrder = order
+      firstTitle = title
+    }
+  })
+  return { uuid: node.uuid, text: truncate(firstTitle.trim()) }
+}
+
+const hydrateBlock = (node: NodeIdentity): Preview => {
+  return { uuid: node.uuid, text: truncate(node.title.trim()) }
 }
 
 const hydrateOne = async (node: NodeIdentity): Promise<Preview> => {
   if (node.isPage === true) {
     return await hydratePage(node)
   }
-  return await hydrateBlock(node)
+  return hydrateBlock(node)
 }
 
 export const hydrateWindow = async (

@@ -49,8 +49,6 @@ export const VIRTUAL_OVERSCAN = 8
 
 export const ONE_DAY_MS = 86400000
 
-export const PREVIEW_CHILD_COUNT = 2
-
 export const PREVIEW_MAX_LENGTH = 160
 
 export const DATE_GROUP_LABEL_PINNED = 'Pinned'
