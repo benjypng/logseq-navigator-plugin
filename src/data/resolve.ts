@@ -63,7 +63,6 @@ const objectsToIdentities = (
     }
     seen.add(uuid)
     const record = asRecord(eachObject)
-    // 'title' embeds refs as raw uuids; 'fullTitle' has readable page names.
     let title = ''
     if (typeof record.fullTitle === 'string') {
       title = record.fullTitle

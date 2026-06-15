@@ -72,9 +72,6 @@ const main = async (): Promise<void> => {
   }
 
   setRailWidth(DEFAULT_PANE_WIDTH)
-  // Force a known state on load: Logseq may restore the iframe as visible across
-  // reloads, which would leave railVisible out of sync (margin 0 while the rail
-  // paints over #root). Honour the "open by default" setting (default true).
   if (getBooleanSetting('openByDefault') ?? true) {
     showRail()
   } else {

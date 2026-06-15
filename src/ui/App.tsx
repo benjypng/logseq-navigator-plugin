@@ -51,8 +51,6 @@ export const App = (): ReactElement => {
   useEffect(() => {
     void loadFolders()
   }, [])
-  // The plugin iframe doesn't inherit Logseq's light/dark theme, so track the
-  // mode ourselves and flip our own palette via the data-theme attribute.
   useEffect(() => {
     void getThemeMode().then((mode) => {
       setColorScheme(mode)
@@ -104,8 +102,6 @@ export const App = (): ReactElement => {
     event.currentTarget.releasePointerCapture(event.pointerId)
     void resizePaneWidth(clampWidth(event.clientX))
   }
-  // The folder pane starts at the rail's left edge, so clientX is the divider's
-  // distance from that edge — i.e. the folder pane width.
   const handleFolderResizePointerDown = (
     event: ReactPointerEvent<HTMLDivElement>,
   ): void => {

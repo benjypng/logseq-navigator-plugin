@@ -79,8 +79,6 @@ const validateFolderWidth = (value: unknown): number => {
   return clampFolderWidth(Math.round(value))
 }
 
-// The config block is a DB-graph code block (#Code tag), so the title holds
-// raw JSON; markdown fences would show up literally inside the code block.
 const buildConfigJson = (config: NavigatorConfig): string => {
   return JSON.stringify(serializeConfig(config), null, 2)
 }
@@ -274,7 +272,6 @@ const parseConfig = (jsonText: string): NavigatorConfig => {
   } catch {
     return emptyConfig()
   }
-  // Legacy format: a bare array of bookmarks with no pins.
   if (Array.isArray(parsed)) {
     return {
       bookmarks: validateBookmarks(parsed),
@@ -309,9 +306,6 @@ export const readConfig = async (): Promise<NavigatorConfig> => {
   return parseConfig(extractJsonText(block.title))
 }
 
-// Tagging with #Code converts the block to a code block; Logseq fills in
-// display-type and auto-detects the language. Never fail a config write
-// over presentation.
 const ensureCodeBlock = async (uuid: string): Promise<void> => {
   try {
     await tagBlockAsCode(uuid)
@@ -339,8 +333,6 @@ export const writeConfig = async (config: NavigatorConfig): Promise<void> => {
     }
     return
   }
-  // Legacy blocks still carry fences in the title; tag them once so they
-  // keep rendering as code after the fences are dropped.
   const hadFences =
     typeof block.title === 'string' && block.title.includes(CONFIG_FENCE_OPEN)
   await updateBlock(block.uuid, content)

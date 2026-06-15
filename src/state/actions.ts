@@ -101,7 +101,6 @@ const pageRefToFolder = (pageRef: PageRefDef): FolderDef => {
     policy: {
       nodes: DEFAULT_NODE_POLICY.nodes,
       includeDescendantTags: DEFAULT_NODE_POLICY.includeDescendantTags,
-      // Linked references mostly live in journal blocks, so journals stay in.
       includeJournal: true,
     },
   }
@@ -364,15 +363,7 @@ export const togglePin = (folderId: string, uuid: string): void => {
 const nodesSignature = (nodes: NodeIdentity[]): string => {
   const parts: string[] = []
   nodes.forEach((eachNode) => {
-    parts.push(
-      eachNode.uuid +
-        ':' +
-        String(eachNode.updatedAt) +
-        ':' +
-        String(eachNode.createdAt) +
-        ':' +
-        eachNode.title,
-    )
+    parts.push(eachNode.uuid + ':' + eachNode.title)
   })
   return parts.join('|')
 }

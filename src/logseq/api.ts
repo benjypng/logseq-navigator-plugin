@@ -73,8 +73,6 @@ export const getLinkedReferenceBlocks = async (
     })
     return blocks
   }
-  // DB graphs return a record keyed by a stringified page entity
-  // ('{"id" 20706}') instead of the typed [page, blocks][] tuples.
   Object.values(grouped as Record<string, unknown>).forEach((eachValue) => {
     pushBlocks(eachValue)
   })
