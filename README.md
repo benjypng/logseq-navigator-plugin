@@ -34,7 +34,7 @@ The navigator never asks an LLM or guesses — every folder resolves determinist
 
 ## 📸 Screenshots / Demo
 
-![](./demo.gif)
+![](./screenshots/dual-pane.png)
 
 ## ⚙️ Installation
 
