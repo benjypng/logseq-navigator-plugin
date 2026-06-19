@@ -32,6 +32,9 @@ export const PAGE_REFS_FOLDER_PREFIX = 'page-refs:'
 
 export const DEFAULT_DEBOUNCE_MS = 400
 
+export const GRAPH_READY_POLL_INTERVAL_MS = 400
+export const GRAPH_READY_MAX_ATTEMPTS = 25
+
 export const SORT_UPDATED: Sort = 'updated'
 export const SORT_CREATED: Sort = 'created'
 export const SORT_TITLE: Sort = 'title'

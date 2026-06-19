@@ -1,10 +1,34 @@
 import type { PageEntity } from '@logseq/libs/dist/LSPlugin.user'
 
+import {
+  GRAPH_READY_MAX_ATTEMPTS,
+  GRAPH_READY_POLL_INTERVAL_MS,
+} from '../constants'
 import { getAllTags, runDatascriptQuery } from '../logseq/api'
 import type { TagInfo } from '../types'
 import { isValidUuid, normaliseIdent } from './queries'
 
 const tagIdentifierByUuid = new Map<string, string>()
+
+const delay = (ms: number): Promise<void> => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
+
+export const waitForGraphReady = async (): Promise<void> => {
+  for (let attempt = 0; attempt < GRAPH_READY_MAX_ATTEMPTS; attempt += 1) {
+    try {
+      const pages = await getAllTags()
+      if (pages.length > 0) {
+        return
+      }
+    } catch {
+      void 0
+    }
+    await delay(GRAPH_READY_POLL_INTERVAL_MS)
+  }
+}
 
 export const getTagIdentifier = (uuid: string): string | null => {
   const identifier = tagIdentifierByUuid.get(uuid)

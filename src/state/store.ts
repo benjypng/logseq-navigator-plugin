@@ -19,6 +19,7 @@ type Listener = () => void
 
 const createInitialState = (): AppState => {
   return {
+    isLoading: true,
     folders: [],
     bookmarks: [],
     pageRefs: [],
@@ -59,6 +60,10 @@ const commitPatch = (patch: Partial<AppState>): void => {
   const nextState: AppState = Object.assign({}, currentState, patch)
   currentState = nextState
   emit()
+}
+
+export const setLoading = (isLoading: boolean): void => {
+  commitPatch({ isLoading: isLoading })
 }
 
 export const setFolders = (folders: FolderDef[]): void => {

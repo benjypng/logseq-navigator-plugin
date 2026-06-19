@@ -12,6 +12,7 @@ import {
   MIN_FOLDER_WIDTH,
   MIN_PANE_WIDTH,
 } from '../constants'
+import { waitForGraphReady } from '../data/tags'
 import { setRailWidth } from '../dock/dock-stub'
 import { getThemeMode, invokeSearch, onThemeModeChanged } from '../logseq/api'
 import {
@@ -19,7 +20,7 @@ import {
   resizeFolderWidth,
   resizePaneWidth,
 } from '../state/actions'
-import { setFolderWidth, useAppState } from '../state/store'
+import { setFolderWidth, setLoading, useAppState } from '../state/store'
 import { FolderPane } from './FolderPane'
 import { NodeListPane } from './NodeListPane'
 
@@ -49,7 +50,12 @@ export const App = (): ReactElement => {
   const folderDraggingRef = useRef(false)
   const [colorScheme, setColorScheme] = useState<'light' | 'dark'>('light')
   useEffect(() => {
-    void loadFolders()
+    const bootstrap = async (): Promise<void> => {
+      await waitForGraphReady()
+      await loadFolders()
+      setLoading(false)
+    }
+    void bootstrap()
   }, [])
   useEffect(() => {
     void getThemeMode().then((mode) => {
@@ -126,6 +132,16 @@ export const App = (): ReactElement => {
     folderDraggingRef.current = false
     event.currentTarget.releasePointerCapture(event.pointerId)
     void resizeFolderWidth(clampFolderWidth(event.clientX))
+  }
+  if (state.isLoading) {
+    return (
+      <div className="navigator-root" data-theme={colorScheme}>
+        <div className="navigator-loading">
+          <div className="navigator-loading-spinner" />
+          <span className="navigator-loading-label">Loading graph…</span>
+        </div>
+      </div>
+    )
   }
   return (
     <div className="navigator-root" data-theme={colorScheme}>

@@ -88,6 +88,7 @@ export interface NavigatorConfig {
 }
 
 export interface AppState {
+  isLoading: boolean
   folders: FolderDef[]
   bookmarks: Bookmark[]
   pageRefs: PageRefDef[]
