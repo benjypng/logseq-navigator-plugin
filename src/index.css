@@ -456,6 +456,45 @@ body {
   white-space: nowrap;
 }
 
+.navigator-new-note {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--nav-faint);
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+.navigator-new-note:hover {
+  background: var(--nav-hover);
+  color: var(--nav-accent);
+}
+
+.navigator-new-note-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 5px 9px;
+  border: 1px solid var(--nav-accent);
+  border-radius: 7px;
+  background: var(--nav-field);
+  outline: none;
+  color: var(--nav-text);
+  font-weight: 450;
+  font-size: 13px;
+}
+
+.navigator-new-note-input::placeholder {
+  color: var(--nav-faint);
+}
+
 .navigator-sort-row {
   display: flex;
   align-items: center;

@@ -10,7 +10,7 @@
 
 - **Three folder sources in a single rail:**
   - **Bookmarks** — pin any page or block via the right-click menu and jump back to it in one click.
-  - **Tags** — every user-defined tag in your graph is auto-enumerated, with live node counts. Click a tag to list everything tagged with it.
+  - **Tags** — every user-defined tag in your graph is auto-enumerated, with live node counts. Click a tag to list everything tagged with it, or hit the new-note button to create a page already tagged with it.
   - **Page References** — define your own watchlist of pages; clicking one lists every page and block that links to it (journal references included).
 - **A serious node list:** results are grouped by date (Today / Yesterday / Previous 7 days / Previous 30 days / Older), sortable by **Updated**, **Created**, or **Title**, filterable as you type, and virtualised so large folders stay fast.
 - **Per-folder pinning:** pin nodes to the top of any folder; pins persist across sessions.
@@ -61,6 +61,8 @@ The navigator opens as a left rail with two panes: folders on the left, nodes on
 ### Tags
 
 Tags are listed automatically — there is nothing to configure. Each row shows the number of nodes carrying that tag. Click a tag to list its pages and blocks in the node pane.
+
+With a tag selected, click the **new-note button** in the node pane header, type a title, and press `Enter`. The plugin creates that page, tags it with the selected tag, and navigates to it. Press `Escape` or click away to cancel. The button only appears for Tag folders.
 
 ### Page References
 

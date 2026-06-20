@@ -1,10 +1,12 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
 import {
   type ChangeEvent,
+  type KeyboardEvent,
   type ReactElement,
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from 'react'
 
 import {
@@ -14,7 +16,13 @@ import {
   VIRTUAL_ROW_HEIGHT,
 } from '../constants'
 import { hydrateWindow } from '../data/hydrate'
-import { navigateToNode, openInRightSidebar } from '../logseq/api'
+import {
+  addPageTag,
+  createPage,
+  navigateToNode,
+  openInRightSidebar,
+  showMessage,
+} from '../logseq/api'
 import { togglePin } from '../state/actions'
 import {
   mergePreviews,
@@ -36,6 +44,13 @@ import { SortMenu } from './SortMenu'
 type FlatRow =
   | { kind: 'header'; label: string }
   | { kind: 'node'; node: NodeIdentity }
+
+const rowKey = (row: FlatRow): string => {
+  if (row.kind === 'header') {
+    return 'h:' + row.label
+  }
+  return 'n:' + row.node.uuid
+}
 
 const flattenGroups = (groups: DateGroup[]): FlatRow[] => {
   const rows: FlatRow[] = []
@@ -110,12 +125,33 @@ const HashIcon = (): ReactElement => {
   )
 }
 
+const NewNoteIcon = (): ReactElement => {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  )
+}
+
 interface NodeListHeaderProps {
   sort: Sort
   filter: string
   folderName: string
   noteCount: number
   onTitleClick: (() => void) | null
+  isTagFolder: boolean
+  onCreateNote: (name: string) => void
 }
 
 const notesLabel = (count: number): string => {
@@ -123,6 +159,44 @@ const notesLabel = (count: number): string => {
 }
 
 const NodeListHeader = (props: NodeListHeaderProps): ReactElement => {
+  const [isCreating, setIsCreating] = useState<boolean>(false)
+  const [draft, setDraft] = useState<string>('')
+  const createInputRef = useRef<HTMLInputElement | null>(null)
+
+  useEffect(() => {
+    if (isCreating === true) {
+      createInputRef.current?.focus()
+    }
+  }, [isCreating])
+
+  const closeCreate = (): void => {
+    setIsCreating(false)
+    setDraft('')
+  }
+
+  const submitCreate = (): void => {
+    const name = draft.trim()
+    if (name.length === 0) {
+      return
+    }
+    props.onCreateNote(name)
+    closeCreate()
+  }
+
+  const handleCreateKeyDown = (
+    event: KeyboardEvent<HTMLInputElement>,
+  ): void => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      submitCreate()
+      return
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      closeCreate()
+    }
+  }
+
   const handleFilterChange = (event: ChangeEvent<HTMLInputElement>): void => {
     setFilter(event.target.value)
   }
@@ -150,6 +224,34 @@ const NodeListHeader = (props: NodeListHeaderProps): ReactElement => {
         <span className="navigator-notes-count">
           {notesLabel(props.noteCount)}
         </span>
+        {props.isTagFolder === true ? (
+          isCreating === true ? (
+            <input
+              ref={createInputRef}
+              className="navigator-new-note-input"
+              type="text"
+              placeholder="New note title…"
+              value={draft}
+              onChange={(event) => {
+                setDraft(event.target.value)
+              }}
+              onKeyDown={handleCreateKeyDown}
+              onBlur={closeCreate}
+            />
+          ) : (
+            <button
+              type="button"
+              className="navigator-new-note"
+              title={'New note tagged ' + props.folderName}
+              aria-label={'New note tagged ' + props.folderName}
+              onClick={() => {
+                setIsCreating(true)
+              }}
+            >
+              <NewNoteIcon />
+            </button>
+          )
+        ) : null}
       </div>
       <div className="navigator-sort-row">
         <span className="navigator-sort-by-label">Sort by</span>
@@ -220,6 +322,13 @@ export const NodeListPane = (): ReactElement => {
     count: flatRows.length,
     getScrollElement: () => {
       return scrollRef.current
+    },
+    getItemKey: (index) => {
+      const row = flatRows[index]
+      if (row === undefined) {
+        return index
+      }
+      return rowKey(row)
     },
     estimateSize: (index) => {
       const row = flatRows[index]
@@ -329,6 +438,30 @@ export const NodeListPane = (): ReactElement => {
       ? 0
       : filterNodes(activeResult.nodes, state.filter).length
 
+  const tagFolder =
+    selectedFolder !== null && selectedFolder.kind === 'tag'
+      ? selectedFolder
+      : null
+
+  const handleCreateNote = (name: string): void => {
+    if (tagFolder === null) {
+      return
+    }
+    const tagUuid = tagFolder.tagUuid
+    createPage(name)
+      .then(async (page) => {
+        if (page === null) {
+          showMessage('Could not create page', 'error')
+          return
+        }
+        await addPageTag(page.uuid, tagUuid)
+        navigateToNode(page.uuid)
+      })
+      .catch(() => {
+        showMessage('Could not create page', 'error')
+      })
+  }
+
   return (
     <div className="navigator-node-pane">
       <NodeListHeader
@@ -337,6 +470,8 @@ export const NodeListPane = (): ReactElement => {
         folderName={folderName}
         noteCount={noteCount}
         onTitleClick={handleTitleClick}
+        isTagFolder={tagFolder !== null}
+        onCreateNote={handleCreateNote}
       />
       <div className="navigator-node-scroll" ref={scrollRef}>
         <div
@@ -363,7 +498,7 @@ export const NodeListPane = (): ReactElement => {
             if (row.kind === 'header') {
               return (
                 <div
-                  key={'header-' + eachItem.index}
+                  key={eachItem.key}
                   data-index={eachItem.index}
                   ref={virtualizer.measureElement}
                   className="navigator-date-group"
@@ -380,7 +515,7 @@ export const NodeListPane = (): ReactElement => {
                 : activeResult.previews.get(row.node.uuid)
             return (
               <div
-                key={row.node.uuid}
+                key={eachItem.key}
                 data-index={eachItem.index}
                 ref={virtualizer.measureElement}
                 style={style}
