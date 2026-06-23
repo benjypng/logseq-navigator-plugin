@@ -29,7 +29,7 @@ const ChevronIcon = (): ReactElement => {
   )
 }
 
-const ArrowRightIcon = (): ReactElement => {
+const ArrowLeftIcon = (): ReactElement => {
   return (
     <svg
       width="16"
@@ -42,8 +42,8 @@ const ArrowRightIcon = (): ReactElement => {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M5 12h14" />
-      <path d="m12 5 7 7-7 7" />
+      <path d="M19 12H5" />
+      <path d="m12 19-7-7 7-7" />
     </svg>
   )
 }
@@ -240,7 +240,7 @@ export const FolderPane = (): ReactElement => {
           aria-label="Close navigator"
           onClick={handleClose}
         >
-          <ArrowRightIcon />
+          <ArrowLeftIcon />
         </button>
       </div>
       <div className="navigator-rail-scroll">
