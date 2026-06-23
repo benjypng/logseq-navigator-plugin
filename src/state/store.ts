@@ -26,6 +26,7 @@ const createInitialState = (): AppState => {
     tagCounts: new Map<string, number>(),
     pageRefCounts: new Map<string, number>(),
     pinnedByFolder: new Map<string, string[]>(),
+    pinnedTags: [],
     selectedFolderId: null,
     selectedNodeUuid: null,
     sort: DEFAULT_SORT,
@@ -86,6 +87,7 @@ export const resetGraphState = (): void => {
     tagCounts: new Map<string, number>(),
     pageRefCounts: new Map<string, number>(),
     pinnedByFolder: new Map<string, string[]>(),
+    pinnedTags: [],
     selectedFolderId: null,
     selectedNodeUuid: null,
     filter: '',
@@ -105,6 +107,10 @@ export const setPinnedByFolder = (
   pinnedByFolder: Map<string, string[]>,
 ): void => {
   commitPatch({ pinnedByFolder: pinnedByFolder })
+}
+
+export const setPinnedTags = (pinnedTags: string[]): void => {
+  commitPatch({ pinnedTags: pinnedTags })
 }
 
 export const selectFolder = (folderId: string): void => {

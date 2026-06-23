@@ -361,6 +361,45 @@ body {
   display: none;
 }
 
+.navigator-folder-pin {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 4px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--nav-faint);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.navigator-folder-pin:hover {
+  background: var(--nav-hover);
+  color: var(--nav-text);
+}
+
+.navigator-tag-item .navigator-folder-pin {
+  display: none;
+}
+
+.navigator-tag-item:hover .navigator-folder-pin,
+.navigator-folder-pin-active {
+  display: flex;
+}
+
+.navigator-folder-pin-active {
+  color: var(--nav-accent);
+}
+
+.navigator-tag-item:hover .navigator-folder-count,
+.navigator-tag-item:has(.navigator-folder-pin-active) .navigator-folder-count {
+  display: none;
+}
+
 .navigator-rail-footer {
   flex: 0 0 auto;
   display: flex;

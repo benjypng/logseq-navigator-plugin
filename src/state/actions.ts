@@ -31,6 +31,7 @@ import {
   setPageRefCounts,
   setPageRefs,
   setPinnedByFolder,
+  setPinnedTags,
   setTagCounts,
   setWidth,
 } from './store'
@@ -159,12 +160,14 @@ export const loadConfig = async (): Promise<void> => {
     setBookmarks(config.bookmarks)
     setPageRefs(config.pageRefs)
     setPinnedByFolder(config.pinnedByFolder)
+    setPinnedTags(config.pinnedTags)
     setWidth(config.width)
     setFolderWidth(config.folderWidth)
   } catch {
     setBookmarks([])
     setPageRefs([])
     setPinnedByFolder(new Map<string, string[]>())
+    setPinnedTags([])
   }
 }
 
@@ -174,6 +177,7 @@ const persistConfig = async (): Promise<void> => {
     bookmarks: state.bookmarks,
     pageRefs: state.pageRefs,
     pinnedByFolder: state.pinnedByFolder,
+    pinnedTags: state.pinnedTags,
     width: state.width,
     folderWidth: state.folderWidth,
   })
@@ -357,6 +361,24 @@ export const togglePin = (folderId: string, uuid: string): void => {
   }
   nextMap.set(folderId, nextList)
   setPinnedByFolder(nextMap)
+  void persistConfig()
+}
+
+export const toggleTagPin = (folderId: string): void => {
+  const current = getState().pinnedTags
+  const next: string[] = []
+  let wasPinned = false
+  current.forEach((eachId) => {
+    if (eachId === folderId) {
+      wasPinned = true
+    } else {
+      next.push(eachId)
+    }
+  })
+  if (wasPinned === false) {
+    next.push(folderId)
+  }
+  setPinnedTags(next)
   void persistConfig()
 }
 

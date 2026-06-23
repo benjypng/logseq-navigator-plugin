@@ -40,6 +40,7 @@ const serializeConfig = (config: NavigatorConfig): unknown => {
     bookmarks: config.bookmarks,
     pageRefs: config.pageRefs,
     pins: pins,
+    pinnedTags: config.pinnedTags,
     width: config.width,
     folderWidth: config.folderWidth,
   }
@@ -252,11 +253,27 @@ const validatePins = (value: unknown): Map<string, string[]> => {
   return map
 }
 
+const validatePinnedTags = (value: unknown): string[] => {
+  if (Array.isArray(value) === false) {
+    return []
+  }
+  const tags: string[] = []
+  const seen = new Set<string>()
+  value.forEach((eachEntry) => {
+    if (typeof eachEntry === 'string' && seen.has(eachEntry) === false) {
+      seen.add(eachEntry)
+      tags.push(eachEntry)
+    }
+  })
+  return tags
+}
+
 const emptyConfig = (): NavigatorConfig => {
   return {
     bookmarks: [],
     pageRefs: [],
     pinnedByFolder: new Map<string, string[]>(),
+    pinnedTags: [],
     width: DEFAULT_PANE_WIDTH,
     folderWidth: DEFAULT_FOLDER_WIDTH,
   }
@@ -277,6 +294,7 @@ const parseConfig = (jsonText: string): NavigatorConfig => {
       bookmarks: validateBookmarks(parsed),
       pageRefs: [],
       pinnedByFolder: new Map<string, string[]>(),
+      pinnedTags: [],
       width: DEFAULT_PANE_WIDTH,
       folderWidth: DEFAULT_FOLDER_WIDTH,
     }
@@ -288,6 +306,7 @@ const parseConfig = (jsonText: string): NavigatorConfig => {
     bookmarks: validateBookmarks(parsed['bookmarks']),
     pageRefs: validatePageRefs(parsed['pageRefs']),
     pinnedByFolder: validatePins(parsed['pins']),
+    pinnedTags: validatePinnedTags(parsed['pinnedTags']),
     width: validateWidth(parsed['width']),
     folderWidth: validateFolderWidth(parsed['folderWidth']),
   }

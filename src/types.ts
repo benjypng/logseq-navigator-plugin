@@ -83,6 +83,7 @@ export interface NavigatorConfig {
   bookmarks: Bookmark[]
   pageRefs: PageRefDef[]
   pinnedByFolder: Map<string, string[]>
+  pinnedTags: string[]
   width: number
   folderWidth: number
 }
@@ -96,6 +97,7 @@ export interface AppState {
   pageRefCounts: Map<string, number>
 
   pinnedByFolder: Map<string, string[]>
+  pinnedTags: string[]
   selectedFolderId: string | null
   selectedNodeUuid: string | null
   sort: Sort
