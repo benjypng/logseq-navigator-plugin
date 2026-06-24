@@ -1,7 +1,12 @@
 import { PREVIEW_MAX_LENGTH } from '../constants'
 import { runDatascriptQuery } from '../logseq/api'
-import type { NodeIdentity, Preview } from '../types'
-import { isValidUuid } from './queries'
+import type { NodeIdentity, Preview, PulledNode } from '../types'
+import {
+  isValidUuid,
+  readAttr,
+  refsToTitleMap,
+  resolveRefTokens,
+} from './queries'
 
 const truncate = (text: string): string => {
   if (text.length <= PREVIEW_MAX_LENGTH) {
@@ -11,12 +16,12 @@ const truncate = (text: string): string => {
 }
 
 const firstBlockQuery = (pageUuid: string): string => {
-  return `[:find ?title ?order
+  return `[:find (pull ?b [:block/title :block/order {:block/refs [:block/uuid :block/title]}])
  :where
  [?page :block/uuid #uuid "${pageUuid}"]
  [?b :block/parent ?page]
- [?b :block/title ?title]
- [?b :block/order ?order]]`
+ [?b :block/title _]
+ [?b :block/order _]]`
 }
 
 const hydratePage = async (node: NodeIdentity): Promise<Preview> => {
@@ -32,17 +37,18 @@ const hydratePage = async (node: NodeIdentity): Promise<Preview> => {
   let firstTitle = ''
   let lowestOrder: string | null = null
   rows.forEach((eachRow) => {
-    if (Array.isArray(eachRow) === false) {
+    const pulled = Array.isArray(eachRow) ? eachRow[0] : eachRow
+    if (typeof pulled !== 'object' || pulled === null) {
       return
     }
-    const title = eachRow[0]
-    const order = eachRow[1]
+    const title = readAttr(pulled as PulledNode, 'block/title')
+    const order = readAttr(pulled as PulledNode, 'block/order')
     if (typeof title !== 'string' || typeof order !== 'string') {
       return
     }
     if (lowestOrder === null || order < lowestOrder) {
       lowestOrder = order
-      firstTitle = title
+      firstTitle = resolveRefTokens(title, refsToTitleMap(pulled as PulledNode))
     }
   })
   return { uuid: node.uuid, text: truncate(firstTitle.trim()) }

@@ -2,7 +2,40 @@ import { UUID_PATTERN } from '../constants'
 import type { NodeIdentity, NodePolicy, PulledNode } from '../types'
 
 const PHASE_ONE_PULL =
-  '(pull ?node [:block/uuid :block/title :block/name :block/created-at :block/updated-at :logseq.property/updated-at :logseq.property/created-at])'
+  '(pull ?node [:block/uuid :block/title :block/name :block/created-at :block/updated-at :logseq.property/updated-at :logseq.property/created-at {:block/refs [:block/uuid :block/title]}])'
+
+const REF_TOKEN_PATTERN =
+  /(?:\[\[|\(\()([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(?:\]\]|\)\))/g
+
+export const extractRefUuids = (title: string): string[] => {
+  const uuids: string[] = []
+  const matches = title.matchAll(REF_TOKEN_PATTERN)
+  for (const eachMatch of matches) {
+    const uuid = eachMatch[1]
+    if (uuid !== undefined) {
+      uuids.push(uuid.toLowerCase())
+    }
+  }
+  return uuids
+}
+
+export const resolveRefTokens = (
+  title: string,
+  titleByUuid: Map<string, string>,
+): string => {
+  return title.replace(REF_TOKEN_PATTERN, (token, uuid: string) => {
+    const resolved = titleByUuid.get(uuid.toLowerCase())
+    if (resolved !== undefined && resolved.length > 0) {
+      return resolved
+    }
+    return token
+  })
+}
+
+export const buildTitleLookupQuery = (uuids: string[]): string => {
+  const literals = uuids.map((eachUuid) => `#uuid "${eachUuid}"`).join(' ')
+  return `[:find ?u ?title\n :where\n [?e :block/uuid ?u]\n [?e :block/title ?title]\n [(contains? #{${literals}} ?u)]]`
+}
 
 export const buildNodeQuery = (whereClause: string): string => {
   return '[:find ' + PHASE_ONE_PULL + '\n :where\n ' + whereClause + ']'
@@ -50,6 +83,25 @@ const pickNumber = (primary: unknown, fallback: unknown): number | null => {
   return null
 }
 
+export const refsToTitleMap = (pulled: PulledNode): Map<string, string> => {
+  const map = new Map<string, string>()
+  const refs = readAttr(pulled, 'block/refs')
+  if (Array.isArray(refs) === false) {
+    return map
+  }
+  refs.forEach((eachRef) => {
+    if (typeof eachRef !== 'object' || eachRef === null) {
+      return
+    }
+    const refUuid = readAttr(eachRef as PulledNode, 'block/uuid')
+    const refTitle = readAttr(eachRef as PulledNode, 'block/title')
+    if (typeof refUuid === 'string' && typeof refTitle === 'string') {
+      map.set(refUuid.toLowerCase(), refTitle)
+    }
+  })
+  return map
+}
+
 export const pulledNodeToIdentity = (
   pulled: PulledNode,
 ): NodeIdentity | null => {
@@ -57,7 +109,11 @@ export const pulledNodeToIdentity = (
   if (typeof uuid !== 'string') {
     return null
   }
-  const title = readAttr(pulled, 'block/title')
+  const rawTitle = readAttr(pulled, 'block/title')
+  const title =
+    typeof rawTitle === 'string'
+      ? resolveRefTokens(rawTitle, refsToTitleMap(pulled))
+      : rawTitle
   const updatedAt = pickNumber(
     readAttr(pulled, 'block/updated-at'),
     readAttr(pulled, 'logseq.property/updated-at'),

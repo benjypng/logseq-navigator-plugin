@@ -11,8 +11,70 @@ import type {
   NodePolicy,
   QueryFolderDef,
 } from '../types'
-import { buildNodeQuery, normaliseResult } from './queries'
+import {
+  buildNodeQuery,
+  buildTitleLookupQuery,
+  extractRefUuids,
+  normaliseResult,
+  resolveRefTokens,
+} from './queries'
 import { getTagIdentifier, subclassClosure } from './tags'
+
+const TITLE_LOOKUP_CHUNK = 150
+
+const lookupRefTitles = async (
+  uuids: string[],
+): Promise<Map<string, string>> => {
+  const titleByUuid = new Map<string, string>()
+  for (let start = 0; start < uuids.length; start += TITLE_LOOKUP_CHUNK) {
+    const chunk = uuids.slice(start, start + TITLE_LOOKUP_CHUNK)
+    let rows: unknown
+    try {
+      rows = await runDatascriptQuery<unknown>(buildTitleLookupQuery(chunk))
+    } catch {
+      continue
+    }
+    if (Array.isArray(rows) === false) {
+      continue
+    }
+    rows.forEach((eachRow) => {
+      if (Array.isArray(eachRow) === false) {
+        return
+      }
+      const uuid = eachRow[0]
+      const title = eachRow[1]
+      if (typeof uuid === 'string' && typeof title === 'string') {
+        titleByUuid.set(uuid.toLowerCase(), title)
+      }
+    })
+  }
+  return titleByUuid
+}
+
+const resolveRefTitles = async (
+  identities: NodeIdentity[],
+): Promise<NodeIdentity[]> => {
+  const needed = new Set<string>()
+  identities.forEach((eachIdentity) => {
+    extractRefUuids(eachIdentity.title).forEach((eachUuid) => {
+      needed.add(eachUuid)
+    })
+  })
+  if (needed.size === 0) {
+    return identities
+  }
+  const titleByUuid = await lookupRefTitles([...needed])
+  if (titleByUuid.size === 0) {
+    return identities
+  }
+  return identities.map((eachIdentity) => {
+    const resolved = resolveRefTokens(eachIdentity.title, titleByUuid)
+    if (resolved === eachIdentity.title) {
+      return eachIdentity
+    }
+    return { ...eachIdentity, title: resolved }
+  })
+}
 
 const asRecord = (value: BlockEntity): Record<string, unknown> => {
   return value as unknown as Record<string, unknown>
@@ -174,10 +236,14 @@ export const resolveFolder = async (
   folder: FolderDef,
 ): Promise<NodeIdentity[]> => {
   if (folder.kind === 'tag') {
-    return await resolveTagFolder(folder.tagUuid, folder.policy)
+    return await resolveRefTitles(
+      await resolveTagFolder(folder.tagUuid, folder.policy),
+    )
   }
   if (folder.kind === 'page-refs') {
-    return await resolvePageRefsFolder(folder.pageName, folder.policy)
+    return await resolveRefTitles(
+      await resolvePageRefsFolder(folder.pageName, folder.policy),
+    )
   }
-  return await resolveQueryFolder(folder)
+  return await resolveRefTitles(await resolveQueryFolder(folder))
 }
