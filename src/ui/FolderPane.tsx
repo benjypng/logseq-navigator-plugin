@@ -267,14 +267,32 @@ export const FolderPane = (): ReactElement => {
 
   const partitioned = partitionFolders(state.folders)
   const pinnedTagSet = new Set<string>(state.pinnedTags)
-  const orderedTags = [...partitioned.tags].sort((a, b) => {
-    const aPinned = pinnedTagSet.has(a.id)
-    const bPinned = pinnedTagSet.has(b.id)
-    if (aPinned === bPinned) {
-      return 0
-    }
-    return aPinned ? -1 : 1
+  const pinnedTags = partitioned.tags.filter((eachFolder) => {
+    return pinnedTagSet.has(eachFolder.id)
   })
+  const restTags = partitioned.tags.filter((eachFolder) => {
+    return pinnedTagSet.has(eachFolder.id) === false
+  })
+
+  const renderTagRow = (eachFolder: FolderDef): ReactElement => {
+    const category = getTagCategory(eachFolder.name)
+    return (
+      <TagRow
+        key={eachFolder.id}
+        folder={eachFolder}
+        isSelected={eachFolder.id === state.selectedFolderId}
+        isPinned={pinnedTagSet.has(eachFolder.id)}
+        count={
+          eachFolder.kind === 'tag'
+            ? state.tagCounts.get(eachFolder.tagUuid)
+            : undefined
+        }
+        colorVar={getCategoryColorVar(category)}
+        onSelect={handleSelect}
+        onTogglePin={handleToggleTagPin}
+      />
+    )
+  }
 
   return (
     <div
@@ -333,25 +351,20 @@ export const FolderPane = (): ReactElement => {
             <div className="navigator-empty">No tags found.</div>
           ) : (
             <ul className="navigator-folder-list">
-              {orderedTags.map((eachFolder) => {
-                const category = getTagCategory(eachFolder.name)
-                return (
-                  <TagRow
-                    key={eachFolder.id}
-                    folder={eachFolder}
-                    isSelected={eachFolder.id === state.selectedFolderId}
-                    isPinned={pinnedTagSet.has(eachFolder.id)}
-                    count={
-                      eachFolder.kind === 'tag'
-                        ? state.tagCounts.get(eachFolder.tagUuid)
-                        : undefined
-                    }
-                    colorVar={getCategoryColorVar(category)}
-                    onSelect={handleSelect}
-                    onTogglePin={handleToggleTagPin}
-                  />
-                )
-              })}
+              {pinnedTags.length === 0 ? null : (
+                <li className="navigator-folder-grouphead" aria-hidden="true">
+                  <span className="navigator-folder-grouplabel">Pinned</span>
+                  <span className="navigator-folder-grouprule" />
+                </li>
+              )}
+              {pinnedTags.map(renderTagRow)}
+              {pinnedTags.length === 0 ? null : (
+                <li
+                  className="navigator-folder-groupdivider"
+                  aria-hidden="true"
+                />
+              )}
+              {restTags.map(renderTagRow)}
             </ul>
           )}
         </Section>

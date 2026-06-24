@@ -400,6 +400,35 @@ body {
   display: none;
 }
 
+.navigator-folder-grouphead {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 9px 6px;
+}
+
+.navigator-folder-grouplabel {
+  flex: none;
+  font-weight: 650;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--nav-accent);
+  white-space: nowrap;
+}
+
+.navigator-folder-grouprule {
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--nav-divider);
+}
+
+.navigator-folder-groupdivider {
+  height: 1px;
+  margin: 6px 9px 8px;
+  background: var(--nav-divider);
+}
+
 .navigator-rail-footer {
   flex: 0 0 auto;
   display: flex;
