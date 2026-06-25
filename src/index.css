@@ -395,8 +395,8 @@ body {
   color: var(--nav-accent);
 }
 
-.navigator-tag-item:hover .navigator-folder-count,
-.navigator-tag-item:has(.navigator-folder-pin-active) .navigator-folder-count {
+.navigator-tag-item:hover:not(:has(.navigator-folder-pin-active))
+  .navigator-folder-count {
   display: none;
 }
 
