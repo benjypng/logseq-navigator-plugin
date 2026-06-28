@@ -12,6 +12,10 @@ const buildDockStyle = (mainContainerId: string): string => {
     ? `div#left-sidebar { left: ${margin} !important; }`
     : ''
 
+  const pdfContainerShift = railVisible
+    ? `div.extensions__pdf-container { left: ${margin} !important; }`
+    : ''
+
   const headerGutter = railVisible
     ? `div#head > .l { padding-left: 10px !important; }`
     : ''
@@ -31,6 +35,8 @@ const buildDockStyle = (mainContainerId: string): string => {
     }
 
     ${leftSidebarShift}
+
+    ${pdfContainerShift}
 
     ${headerGutter}
 
