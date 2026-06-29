@@ -159,6 +159,16 @@ body {
 }
 
 .navigator-folder-pane {
+  --nav-sidebar: #30404d;
+  --nav-border: #26333d;
+  --nav-divider: rgba(138, 155, 168, 0.18);
+  --nav-text: #c5d0da;
+  --nav-muted: #97a6b4;
+  --nav-faint: #8a98a6;
+  --nav-hover: rgba(138, 155, 168, 0.18);
+  --nav-sel: rgba(138, 155, 168, 0.28);
+  --nav-accent: #8abbff;
+
   display: flex;
   flex-direction: column;
   flex: 0 0 auto;
