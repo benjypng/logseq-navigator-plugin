@@ -70,11 +70,13 @@ const setRailVisible = (visible: boolean): void => {
 
 export const showRail = (): void => {
   logseq.showMainUI()
+  logseq.App.setLeftSidebarVisible(false)
   setRailVisible(true)
 }
 
 export const hideRail = (): void => {
   logseq.hideMainUI()
+  logseq.App.setLeftSidebarVisible(true)
   setRailVisible(false)
 }
 
